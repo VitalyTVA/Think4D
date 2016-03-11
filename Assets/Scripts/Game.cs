@@ -55,32 +55,46 @@ public class Game : MonoBehaviour {
         edge.transform.localScale = new Vector3(edge.transform.localScale.x, len / 2, edge.transform.localScale.z);
         edge.transform.localRotation = Quaternion.LookRotation(from - to, Vector3.up) * Quaternion.Euler(90, 0, 0);
     }
-    // Update is called once per frame
-    float horz, vert, angleH, angleV;
-    void Update () {
-        var mPos = Input.mousePosition;
-        mPos.z = 20;
 
+    float horz, vert, angleH, angleV;
+
+    Quaternion baseRotation, newRotation;
+    Vector3 basePos;
+    void Update () {
         //var worldPos = Camera.main.ScreenToWorldPoint(mPos);
         //Debug.Log(mPos + " " + worldPos.x.ToString());
         //if(Input.GetMouseButtonDown(0))
         //    Debug.DrawRay(Camera.main.transform.position, worldPos - Camera.main.transform.position, Color.red, 100);
 
+        if(Input.GetMouseButtonDown(0)) {
+            baseRotation = root.transform.rotation;
+            newRotation = Quaternion.identity;
+            basePos = Input.mousePosition;
+        }
         if(Input.GetMouseButton(0)) {
-            Ray ray1 = Camera.main.ScreenPointToRay(mPos);
-            var rotationSpeed = 35;
-            var dx = Input.GetAxis("Mouse X") * rotationSpeed;
-            var dy = Input.GetAxis("Mouse Y") * rotationSpeed;
-            Ray ray2 = Camera.main.ScreenPointToRay(mPos + new Vector3(dx, dy, 0));
-            var intersection1 = ray1.NearestIntersectWithOriginsSphere(2);
-            var intersection2 = ray2.NearestIntersectWithOriginsSphere(2);
+            var curPos = Input.mousePosition;
+            curPos.z = 20;
+            var prevPos = basePos;
+            prevPos.z = 20;
+            Ray ray1 = Camera.main.ScreenPointToRay(prevPos);
+            Ray ray2 = Camera.main.ScreenPointToRay(curPos);
+            var intersection1 = ray1.NearestIntersectWithOriginsSphere(1);
+            var intersection2 = ray2.NearestIntersectWithOriginsSphere(1);
             if(intersection1 != null && intersection2 != null && intersection1.Value != intersection2.Value) {
-                root.transform.rotation = Quaternion.FromToRotation(intersection1.Value, intersection2.Value) * root.transform.rotation;
-                //Debug.DrawRay(Vector3.zero, intersection.Value, Color.red, 100);
-                //Debug.Log(dx + " " + dy);
+                var rotation = Quaternion.FromToRotation(intersection1.Value, intersection2.Value);
+                var posDiff = Input.mousePosition - basePos;
+                if(posDiff.magnitude < 10) {
+                    newRotation = rotation;
+                } else {
+                    baseRotation = rotation * baseRotation;
+                    newRotation = Quaternion.identity;
+                    basePos = Input.mousePosition;
+                }
+                root.transform.rotation = newRotation * baseRotation;
             }
-            //Debug.DrawRay(Camera.main.transform.position, intersection.Value - Camera.main.transform.position, Color.red);
-            //Debug.DrawRay(ray.origin, ray.direction * 5, Color.red, 1000);
+        }
+        if(Input.GetMouseButtonUp(0)) {
+            root.transform.rotation = newRotation * baseRotation;
         }
 
         if(Input.GetAxis("Fire1") == 0) {
