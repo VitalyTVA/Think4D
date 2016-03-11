@@ -69,6 +69,22 @@ public static class Polyhedron {
         var intersection = line.IntersectWith(plane);
         return intersection.Reduce();
     }
+    public static Vector3? NearestIntersectWithOriginsSphere(this Ray ray, float r) {
+        var a = ray.direction.sqrMagnitude;
+        var b = 2 * Vector3.Dot(ray.origin, ray.direction);
+        var c = ray.origin.sqrMagnitude - r * r;
+        var t = SolveQuadratic(1, -7, 12);
+        var roots = SolveQuadratic(a, b, c);
+        if(roots == null)
+            return null;
+        return ray.GetPoint(roots.Value.x);
+    }
+    static Vector2? SolveQuadratic(float a, float b, float c) {
+        var d = b * b - 4 * a * c;
+        if(d < 0)
+            return null;
+        return new Vector2((-b - Mathf.Sqrt(d)) / (2 * a), (-b + Mathf.Sqrt(d)) / (2 * a));
+    } 
 }
 public static class LinqExtensions {
     public static ReadOnlyCollection<T> ToReadOnly<T>(this IEnumerable<T> source) {

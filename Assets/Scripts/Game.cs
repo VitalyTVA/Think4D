@@ -58,6 +58,31 @@ public class Game : MonoBehaviour {
     // Update is called once per frame
     float horz, vert, angleH, angleV;
     void Update () {
+        var mPos = Input.mousePosition;
+        mPos.z = 20;
+
+        //var worldPos = Camera.main.ScreenToWorldPoint(mPos);
+        //Debug.Log(mPos + " " + worldPos.x.ToString());
+        //if(Input.GetMouseButtonDown(0))
+        //    Debug.DrawRay(Camera.main.transform.position, worldPos - Camera.main.transform.position, Color.red, 100);
+
+        if(Input.GetMouseButton(0)) {
+            Ray ray1 = Camera.main.ScreenPointToRay(mPos);
+            var rotationSpeed = 35;
+            var dx = Input.GetAxis("Mouse X") * rotationSpeed;
+            var dy = Input.GetAxis("Mouse Y") * rotationSpeed;
+            Ray ray2 = Camera.main.ScreenPointToRay(mPos + new Vector3(dx, dy, 0));
+            var intersection1 = ray1.NearestIntersectWithOriginsSphere(2);
+            var intersection2 = ray2.NearestIntersectWithOriginsSphere(2);
+            if(intersection1 != null && intersection2 != null && intersection1.Value != intersection2.Value) {
+                root.transform.rotation = Quaternion.FromToRotation(intersection1.Value, intersection2.Value) * root.transform.rotation;
+                //Debug.DrawRay(Vector3.zero, intersection.Value, Color.red, 100);
+                //Debug.Log(dx + " " + dy);
+            }
+            //Debug.DrawRay(Camera.main.transform.position, intersection.Value - Camera.main.transform.position, Color.red);
+            //Debug.DrawRay(ray.origin, ray.direction * 5, Color.red, 1000);
+        }
+
         if(Input.GetAxis("Fire1") == 0) {
             horz += rotationSpeed * Input.GetAxis("Horizontal");
             vert += rotationSpeed * Input.GetAxis("Vertical");
@@ -66,10 +91,10 @@ public class Game : MonoBehaviour {
             angleV += rotationSpeed * Input.GetAxis("Horizontal");
         }
 
-        root.transform.localRotation =
-            Quaternion.Euler(vert, 0, 0)
-            *
-            Quaternion.Euler(0, horz, 0);
+        //root.transform.localRotation =
+        //    Quaternion.Euler(vert, 0, 0)
+        //    *
+        //    Quaternion.Euler(0, horz, 0);
 
         Matrix4x4 m = GetM1() * GetM2();
 
