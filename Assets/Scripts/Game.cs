@@ -58,7 +58,7 @@ public class Game : MonoBehaviour {
 
     float horz, vert, angleH, angleV;
 
-    Quaternion baseRotation, newRotation;
+    Quaternion baseRotation = Quaternion.identity, newRotation = Quaternion.identity;
     Vector3 basePos;
     void Update () {
         //var worldPos = Camera.main.ScreenToWorldPoint(mPos);
@@ -67,8 +67,6 @@ public class Game : MonoBehaviour {
         //    Debug.DrawRay(Camera.main.transform.position, worldPos - Camera.main.transform.position, Color.red, 100);
 
         if(Input.GetMouseButtonDown(0)) {
-            baseRotation = root.transform.rotation;
-            newRotation = Quaternion.identity;
             basePos = Input.mousePosition;
         }
         if(Input.GetMouseButton(0)) {
@@ -94,7 +92,9 @@ public class Game : MonoBehaviour {
             }
         }
         if(Input.GetMouseButtonUp(0)) {
-            root.transform.rotation = newRotation * baseRotation;
+            baseRotation = newRotation * baseRotation;
+            newRotation = Quaternion.identity;
+            root.transform.rotation = baseRotation;
         }
 
         if(Input.GetAxis("Fire1") == 0) {
@@ -151,5 +151,7 @@ public class Game : MonoBehaviour {
         m[1, 0] = -s;
         m[0, 1] = s;
         return m;
+    }
+    class RotationHelper {
     }
 }
