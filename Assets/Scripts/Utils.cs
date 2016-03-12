@@ -100,6 +100,14 @@ public static class Polyhedron {
         result.w = q.w * inv;
         return result;
     }
+    public static Matrix4x4  Normalize(this Matrix4x4 m) {
+        //var det = m.determinant;
+        //for(int i = 0; i < 16; i++) {
+        //    m[i] = m[i] / det;
+        //}
+        return m;
+    }
+
 }
 public static class LinqExtensions {
     public static ReadOnlyCollection<T> ToReadOnly<T>(this IEnumerable<T> source) {

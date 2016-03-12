@@ -35,7 +35,7 @@ public class Game : MonoBehaviour {
         edges = polyhedron.Edges.Select(x => AddEdge(edge, root)).ToArray();
 
         rotationHelper = new RotationHelper(x => {
-            polyRotation = Matrix4x4.TRS(Vector3.zero, x, new Vector3(1, 1, 1));
+            polyRotation = x;
             //polyRotation[3, 0] = polyRotation[2, 0];
             //polyRotation[3, 1] = polyRotation[2, 1];
             //polyRotation[0, 3] = polyRotation[0, 2];
@@ -76,8 +76,6 @@ public class Game : MonoBehaviour {
 
     float horz, vert, angleH, angleV;
 
-    Quaternion baseRotation = Quaternion.identity, newRotation = Quaternion.identity;
-    Vector3 basePos;
     void Update () {
         //var worldPos = Camera.main.ScreenToWorldPoint(mPos);
         //Debug.Log(mPos + " " + worldPos.x.ToString());
@@ -142,11 +140,11 @@ public class Game : MonoBehaviour {
     //    return m;
     //}
     class RotationHelper {
-        Quaternion baseRotation = Quaternion.identity, newRotation = Quaternion.identity;
+        Matrix4x4 baseRotation = Matrix4x4.identity, newRotation = Matrix4x4.identity;
         Vector3 basePos;
-        readonly Action<Quaternion> setRotation;
+        readonly Action<Matrix4x4> setRotation;
 
-        public RotationHelper(Action<Quaternion> setRotation) {
+        public RotationHelper(Action<Matrix4x4> setRotation) {
             this.setRotation = setRotation;
         }
 
@@ -168,13 +166,13 @@ public class Game : MonoBehaviour {
                     //value1.z = 0;
                     var value2 = intersection2.Value;
                     //value2.z = 0;
-                    var rotation = Quaternion.FromToRotation(value1, value2);
+                    var rotation = Matrix4x4.TRS(Vector3.zero, Quaternion.FromToRotation(value1, value2), new Vector3(1, 1, 1));
                     var posDiff = Input.mousePosition - basePos;
                     if(posDiff.magnitude < 10) {
                         newRotation = rotation;
                     } else {
                         baseRotation = (rotation * baseRotation).Normalize();
-                        newRotation = Quaternion.identity;
+                        newRotation = Matrix4x4.identity;
                         basePos = Input.mousePosition;
                     }
                     setRotation(newRotation * baseRotation);
@@ -182,7 +180,7 @@ public class Game : MonoBehaviour {
             }
             if(Input.GetMouseButtonUp(0)) {
                 baseRotation = (newRotation * baseRotation).Normalize();
-                newRotation = Quaternion.identity;
+                newRotation = Matrix4x4.identity;
             }
         }
     }
