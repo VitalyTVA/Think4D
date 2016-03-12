@@ -22,6 +22,7 @@ public class Game : MonoBehaviour {
     GameObject[] vertexes, edges;
     GameObject root;
     RotationHelper rotationHelper;
+    Matrix4x4 polyRotation = Matrix4x4.identity;
     void Start() {
         //polyhedron = Polyhedron.Cube3D;
         var polyhedron = GetPoly(Matrix4x4.identity);
@@ -33,7 +34,20 @@ public class Game : MonoBehaviour {
         vertexes = polyhedron.Vertexes.Select(x => AddVertex(vertex, root)).ToArray();
         edges = polyhedron.Edges.Select(x => AddEdge(edge, root)).ToArray();
 
-        rotationHelper = new RotationHelper(x => root.transform.rotation = x);
+        rotationHelper = new RotationHelper(x => {
+            polyRotation = Matrix4x4.TRS(Vector3.zero, x, new Vector3(1, 1, 1));
+            //polyRotation[3, 0] = polyRotation[2, 0];
+            //polyRotation[3, 1] = polyRotation[2, 1];
+            //polyRotation[0, 3] = polyRotation[0, 2];
+            //polyRotation[1, 3] = polyRotation[1, 2];
+            //polyRotation[3, 3] = polyRotation[2, 2];
+
+            //polyRotation[2, 0] = 0;
+            //polyRotation[2, 1] = 0;
+            //polyRotation[0, 2] = 0;
+            //polyRotation[1, 2] = 0;
+            //polyRotation[2, 2] = 1;
+        });
     }
 
     static Polyhedron<Vector3> GetPoly(Matrix4x4 m) {
@@ -85,9 +99,9 @@ public class Game : MonoBehaviour {
         //    *
         //    Quaternion.Euler(0, horz, 0);
 
-        Matrix4x4 m = GetM1() * GetM2();
+        //Matrix4x4 m = GetM1() * GetM2();
 
-        var rotatedPolyhendron = GetPoly(m);
+        var rotatedPolyhendron = GetPoly(polyRotation);
 
         for(int i = 0; i < vertexes.Length; i++) {
             vertexes[i].transform.localPosition = rotatedPolyhendron.Vertexes[i];
@@ -97,16 +111,16 @@ public class Game : MonoBehaviour {
         }
     }
 
-    private Matrix4x4 GetM1() {
-        var m = Matrix4x4.identity;
-        var c = Mathf.Cos(Mathf.PI * angleH / 180);
-        var s = Mathf.Sin(Mathf.PI * angleH / 180);
-        m[3, 3] = c;
-        m[1, 1] = c;
-        m[1, 3] = -s;
-        m[3, 1] = s;
-        return m;
-    }
+    //private Matrix4x4 GetM1() {
+    //    var m = Matrix4x4.identity;
+    //    var c = Mathf.Cos(Mathf.PI * angleH / 180);
+    //    var s = Mathf.Sin(Mathf.PI * angleH / 180);
+    //    m[3, 3] = c;
+    //    m[1, 1] = c;
+    //    m[1, 3] = -s;
+    //    m[3, 1] = s;
+    //    return m;
+    //}
     //private Matrix4x4 GetM2() {
     //    var m = Matrix4x4.identity;
     //    var c = Mathf.Cos(Mathf.PI * angleV / 180);
@@ -117,16 +131,16 @@ public class Game : MonoBehaviour {
     //    m[3, 2] = s;
     //    return m;
     //}
-    private Matrix4x4 GetM2() {
-        var m = Matrix4x4.identity;
-        var c = Mathf.Cos(Mathf.PI * angleV / 180);
-        var s = Mathf.Sin(Mathf.PI * angleV / 180);
-        m[0, 0] = c;
-        m[1, 1] = c;
-        m[1, 0] = -s;
-        m[0, 1] = s;
-        return m;
-    }
+    //private Matrix4x4 GetM2() {
+    //    var m = Matrix4x4.identity;
+    //    var c = Mathf.Cos(Mathf.PI * angleV / 180);
+    //    var s = Mathf.Sin(Mathf.PI * angleV / 180);
+    //    m[0, 0] = c;
+    //    m[1, 1] = c;
+    //    m[1, 0] = -s;
+    //    m[0, 1] = s;
+    //    return m;
+    //}
     class RotationHelper {
         Quaternion baseRotation = Quaternion.identity, newRotation = Quaternion.identity;
         Vector3 basePos;
@@ -150,12 +164,16 @@ public class Game : MonoBehaviour {
                 var intersection1 = ray1.NearestIntersectWithOriginsSphere(1);
                 var intersection2 = ray2.NearestIntersectWithOriginsSphere(1);
                 if(intersection1 != null && intersection2 != null && intersection1.Value != intersection2.Value) {
-                    var rotation = Quaternion.FromToRotation(intersection1.Value, intersection2.Value);
+                    var value1 = intersection1.Value;
+                    //value1.z = 0;
+                    var value2 = intersection2.Value;
+                    //value2.z = 0;
+                    var rotation = Quaternion.FromToRotation(value1, value2);
                     var posDiff = Input.mousePosition - basePos;
                     if(posDiff.magnitude < 10) {
                         newRotation = rotation;
                     } else {
-                        baseRotation = rotation * baseRotation;
+                        baseRotation = (rotation * baseRotation).Normalize();
                         newRotation = Quaternion.identity;
                         basePos = Input.mousePosition;
                     }
@@ -163,7 +181,7 @@ public class Game : MonoBehaviour {
                 }
             }
             if(Input.GetMouseButtonUp(0)) {
-                baseRotation = newRotation * baseRotation;
+                baseRotation = (newRotation * baseRotation).Normalize();
                 newRotation = Quaternion.identity;
             }
         }
