@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Linq;
+using System;
 
 public class Game : MonoBehaviour {
     public GameObject vertex;
@@ -20,6 +21,7 @@ public class Game : MonoBehaviour {
     //    };
     GameObject[] vertexes, edges;
     GameObject root;
+    RotationHelper rotationHelper;
     void Start() {
         //polyhedron = Polyhedron.Cube3D;
         var polyhedron = GetPoly(Matrix4x4.identity);
@@ -30,6 +32,8 @@ public class Game : MonoBehaviour {
 
         vertexes = polyhedron.Vertexes.Select(x => AddVertex(vertex, root)).ToArray();
         edges = polyhedron.Edges.Select(x => AddEdge(edge, root)).ToArray();
+
+        rotationHelper = new RotationHelper(x => root.transform.rotation = x);
     }
 
     static Polyhedron<Vector3> GetPoly(Matrix4x4 m) {
@@ -66,36 +70,7 @@ public class Game : MonoBehaviour {
         //if(Input.GetMouseButtonDown(0))
         //    Debug.DrawRay(Camera.main.transform.position, worldPos - Camera.main.transform.position, Color.red, 100);
 
-        if(Input.GetMouseButtonDown(0)) {
-            basePos = Input.mousePosition;
-        }
-        if(Input.GetMouseButton(0)) {
-            var curPos = Input.mousePosition;
-            curPos.z = 20;
-            var prevPos = basePos;
-            prevPos.z = 20;
-            Ray ray1 = Camera.main.ScreenPointToRay(prevPos);
-            Ray ray2 = Camera.main.ScreenPointToRay(curPos);
-            var intersection1 = ray1.NearestIntersectWithOriginsSphere(1);
-            var intersection2 = ray2.NearestIntersectWithOriginsSphere(1);
-            if(intersection1 != null && intersection2 != null && intersection1.Value != intersection2.Value) {
-                var rotation = Quaternion.FromToRotation(intersection1.Value, intersection2.Value);
-                var posDiff = Input.mousePosition - basePos;
-                if(posDiff.magnitude < 10) {
-                    newRotation = rotation;
-                } else {
-                    baseRotation = rotation * baseRotation;
-                    newRotation = Quaternion.identity;
-                    basePos = Input.mousePosition;
-                }
-                root.transform.rotation = newRotation * baseRotation;
-            }
-        }
-        if(Input.GetMouseButtonUp(0)) {
-            baseRotation = newRotation * baseRotation;
-            newRotation = Quaternion.identity;
-            root.transform.rotation = baseRotation;
-        }
+        rotationHelper.Update();
 
         if(Input.GetAxis("Fire1") == 0) {
             horz += rotationSpeed * Input.GetAxis("Horizontal");
@@ -153,5 +128,44 @@ public class Game : MonoBehaviour {
         return m;
     }
     class RotationHelper {
+        Quaternion baseRotation = Quaternion.identity, newRotation = Quaternion.identity;
+        Vector3 basePos;
+        readonly Action<Quaternion> setRotation;
+
+        public RotationHelper(Action<Quaternion> setRotation) {
+            this.setRotation = setRotation;
+        }
+
+        public void Update() {
+            if(Input.GetMouseButtonDown(0)) {
+                basePos = Input.mousePosition;
+            }
+            if(Input.GetMouseButton(0)) {
+                var curPos = Input.mousePosition;
+                curPos.z = 20;
+                var prevPos = basePos;
+                prevPos.z = 20;
+                Ray ray1 = Camera.main.ScreenPointToRay(prevPos);
+                Ray ray2 = Camera.main.ScreenPointToRay(curPos);
+                var intersection1 = ray1.NearestIntersectWithOriginsSphere(1);
+                var intersection2 = ray2.NearestIntersectWithOriginsSphere(1);
+                if(intersection1 != null && intersection2 != null && intersection1.Value != intersection2.Value) {
+                    var rotation = Quaternion.FromToRotation(intersection1.Value, intersection2.Value);
+                    var posDiff = Input.mousePosition - basePos;
+                    if(posDiff.magnitude < 10) {
+                        newRotation = rotation;
+                    } else {
+                        baseRotation = rotation * baseRotation;
+                        newRotation = Quaternion.identity;
+                        basePos = Input.mousePosition;
+                    }
+                    setRotation(newRotation * baseRotation);
+                }
+            }
+            if(Input.GetMouseButtonUp(0)) {
+                baseRotation = newRotation * baseRotation;
+                newRotation = Quaternion.identity;
+            }
+        }
     }
 }
