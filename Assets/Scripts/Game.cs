@@ -22,7 +22,7 @@ public class Game : MonoBehaviour {
     GameObject[] vertexes, edges;
     GameObject root;
     RotationHelper rotationHelper;
-    RotationHelper2 rotationHelper2;
+    RotationHelper rotationHelper2;
     Matrix4x4 polyRotation = Matrix4x4.identity;
     void Start() {
         //polyhedron = Polyhedron.Cube3D;
@@ -37,10 +37,24 @@ public class Game : MonoBehaviour {
 
         rotationHelper = new RotationHelper(x => {
             polyRotation = x;
-        }, () => polyRotation);
-        rotationHelper2 = new RotationHelper2(x => {
+        }, () => polyRotation, x => x, 0);
+        rotationHelper2 = new RotationHelper(x => {
             polyRotation = x;
-        }, () => polyRotation);
+        }, () => polyRotation, rotation => {
+            rotation[3, 0] = rotation[2, 0];
+            rotation[3, 1] = rotation[2, 1];
+            rotation[0, 3] = rotation[0, 2];
+            rotation[1, 3] = rotation[1, 2];
+            rotation[3, 3] = rotation[2, 2];
+
+            rotation[2, 0] = 0;
+            rotation[2, 1] = 0;
+            rotation[0, 2] = 0;
+            rotation[1, 2] = 0;
+            rotation[2, 2] = 1;
+
+            return rotation;
+        }, 1);
     }
 
     static Polyhedron<Vector3> GetPoly(Matrix4x4 m) {
@@ -138,19 +152,23 @@ public class Game : MonoBehaviour {
         Vector3 basePos;
         readonly Action<Matrix4x4> setRotation;
         readonly Func<Matrix4x4> getRotation;
+        readonly Func<Matrix4x4, Matrix4x4> coerceMatrix;
+        readonly int button;
 
-        public RotationHelper(Action<Matrix4x4> setRotation, Func<Matrix4x4> getRotation) {
+        public RotationHelper(Action<Matrix4x4> setRotation, Func<Matrix4x4> getRotation, Func<Matrix4x4, Matrix4x4> coerceMatrix, int button) {
             this.setRotation = setRotation;
             this.getRotation = getRotation;
+            this.coerceMatrix = coerceMatrix;
+            this.button = button;
         }
 
         public void Update() {
-            if(Input.GetMouseButtonDown(0)) {
+            if(Input.GetMouseButtonDown(button)) {
                 basePos = Input.mousePosition;
                 baseRotation = getRotation();
                 newRotation = Matrix4x4.identity;
             }
-            if(Input.GetMouseButton(0)) {
+            if(Input.GetMouseButton(button)) {
                 var curPos = Input.mousePosition;
                 curPos.z = 20;
                 var prevPos = basePos;
@@ -164,7 +182,7 @@ public class Game : MonoBehaviour {
                     //value1.z = 0;
                     var value2 = intersection2.Value;
                     //value2.z = 0;
-                    var rotation = Matrix4x4.TRS(Vector3.zero, Quaternion.FromToRotation(value1, value2), new Vector3(1, 1, 1));
+                    var rotation = coerceMatrix(Matrix4x4.TRS(Vector3.zero, Quaternion.FromToRotation(value1, value2), new Vector3(1, 1, 1)));
                     var posDiff = Input.mousePosition - basePos;
                     if(posDiff.magnitude < 10) {
                         newRotation = rotation;
@@ -176,70 +194,7 @@ public class Game : MonoBehaviour {
                     setRotation(newRotation * baseRotation);
                 }
             }
-            if(Input.GetMouseButtonUp(0)) {
-                //baseRotation = (newRotation * baseRotation).Normalize();
-                //newRotation = Matrix4x4.identity;
-            }
-        }
-    }
-    class RotationHelper2 {
-        Matrix4x4 baseRotation = Matrix4x4.identity, newRotation = Matrix4x4.identity;
-        Vector3 basePos;
-        readonly Action<Matrix4x4> setRotation;
-        readonly Func<Matrix4x4> getRotation;
-
-        public RotationHelper2(Action<Matrix4x4> setRotation, Func<Matrix4x4> getRotation) {
-            this.setRotation = setRotation;
-            this.getRotation = getRotation;
-        }
-
-        public void Update() {
-            if(Input.GetMouseButtonDown(1)) {
-                basePos = Input.mousePosition;
-                baseRotation = getRotation();
-                newRotation = Matrix4x4.identity;
-            }
-            if(Input.GetMouseButton(1)) {
-                var curPos = Input.mousePosition;
-                curPos.z = 20;
-                var prevPos = basePos;
-                prevPos.z = 20;
-                Ray ray1 = Camera.main.ScreenPointToRay(prevPos);
-                Ray ray2 = Camera.main.ScreenPointToRay(curPos);
-                var intersection1 = ray1.NearestIntersectWithOriginsSphere(1);
-                var intersection2 = ray2.NearestIntersectWithOriginsSphere(1);
-                if(intersection1 != null && intersection2 != null && intersection1.Value != intersection2.Value) {
-                    var value1 = intersection1.Value;
-                    //value1.z = 0;
-                    var value2 = intersection2.Value;
-                    //value2.z = 0;
-                    var rotation = Matrix4x4.TRS(Vector3.zero, Quaternion.FromToRotation(value1, value2), new Vector3(1, 1, 1));
-
-                    rotation[3, 0] = rotation[2, 0];
-                    rotation[3, 1] = rotation[2, 1];
-                    rotation[0, 3] = rotation[0, 2];
-                    rotation[1, 3] = rotation[1, 2];
-                    rotation[3, 3] = rotation[2, 2];
-
-                    rotation[2, 0] = 0;
-                    rotation[2, 1] = 0;
-                    rotation[0, 2] = 0;
-                    rotation[1, 2] = 0;
-                    rotation[2, 2] = 1;
-
-
-                    var posDiff = Input.mousePosition - basePos;
-                    if(posDiff.magnitude < 10) {
-                        newRotation = rotation;
-                    } else {
-                        baseRotation = (rotation * baseRotation).Normalize();
-                        newRotation = Matrix4x4.identity;
-                        basePos = Input.mousePosition;
-                    }
-                    setRotation(newRotation * baseRotation);
-                }
-            }
-            if(Input.GetMouseButtonUp(1)) {
+            if(Input.GetMouseButtonUp(button)) {
                 //baseRotation = (newRotation * baseRotation).Normalize();
                 //newRotation = Matrix4x4.identity;
             }
