@@ -66,7 +66,9 @@ public static class Polyhedron {
 
 
     static IEnumerable<Face<T>> CombinePrismFaces<T>(Polyhedron<T> top, Polyhedron<T> bottom) {
-        return top.Faces.Concat(bottom.Faces);
+        var newFaces = top.Edges.Zip(bottom.Edges, 
+            (x, y) => Face.Create(new[] { x.Vertex1, x.Vertex2, y.Vertex2, y.Vertex1 }));
+        return top.Faces.Concat(bottom.Faces).Concat(newFaces);
     }
 
     public static Polyhedron<T> Create<T>(IEnumerable<T> vertexes, IEnumerable<Edge<T>> edges, IEnumerable<Face<T>> faces) {

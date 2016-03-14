@@ -18,7 +18,8 @@ public class Game : MonoBehaviour {
 
         var polyhedron = GetPoly(Matrix4x4.identity);
 
-        faces = CreateFaces(faceMaterial, Polyhedron.Cube3D);
+        //faces = CreateFaces(faceMaterial, Polyhedron.Cube3D);
+        faces = CreateFaces(faceMaterial);
 
         root = new GameObject("Cube");
         root.transform.position = Vector3.zero;
@@ -48,10 +49,16 @@ public class Game : MonoBehaviour {
         }, 1);
     }
 
-    static GameObject CreateFaces(Material material, Polyhedron<Vector3> polyhedron) {
+    static GameObject CreateFaces(Material material) {
         var faces = new GameObject("Faces", typeof(MeshFilter), typeof(MeshRenderer));
         faces.GetComponent<MeshRenderer>().material = material;
         var mf = faces.GetComponent<MeshFilter>();
+        var mesh = new Mesh();
+        mf.mesh = mesh;
+        return faces;
+    }
+
+    static void UpdateFaces(MeshFilter mf, Polyhedron<Vector3> polyhedron) {
         var mesh = new Mesh();
         mf.mesh = mesh;
 
@@ -79,59 +86,6 @@ public class Game : MonoBehaviour {
         }).ToArray();
         mesh.normals = faceMeshes.SelectMany(x => x.normals).ToArray();
         mesh.uv = faceMeshes.SelectMany(x => x.uvs).ToArray();
-
-        return faces;
-    }
-
-    static GameObject CreateFaces_(Material material, Polyhedron<Vector3> polyhedron) {
-        var width = 2;
-        var height = 2;
-        var faces = new GameObject("Faces", typeof(MeshFilter), typeof(MeshRenderer));
-        faces.GetComponent<MeshRenderer>().material = material;
-        var mf = faces.GetComponent<MeshFilter>();
-        var mesh = new Mesh();
-        mf.mesh = mesh;
-
-        var vertices = new Vector3[4];
-
-        vertices[0] = new Vector3(0, 0, 0);
-        vertices[1] = new Vector3(width, 0, 0);
-        vertices[2] = new Vector3(0, height, 0);
-        vertices[3] = new Vector3(width, height, 0);
-
-        mesh.vertices = vertices;
-
-        var tri = new int[6];
-
-        tri[0] = 0;
-        tri[1] = 2;
-        tri[2] = 1;
-
-        tri[3] = 2;
-        tri[4] = 3;
-        tri[5] = 1;
-
-        mesh.triangles = tri;
-
-        var normals = new Vector3[4];
-
-        normals[0] = -Vector3.forward;
-        normals[1] = -Vector3.forward;
-        normals[2] = -Vector3.forward;
-        normals[3] = -Vector3.forward;
-
-        mesh.normals = normals;
-
-        var uv = new Vector2[4];
-
-        uv[0] = new Vector2(0, 0);
-        uv[1] = new Vector2(1, 0);
-        uv[2] = new Vector2(0, 1);
-        uv[3] = new Vector2(1, 1);
-
-        mesh.uv = uv;
-
-        return faces;
     }
 
     static Polyhedron<Vector3> GetPoly(Matrix4x4 m) {
@@ -170,5 +124,10 @@ public class Game : MonoBehaviour {
         for(int i = 0; i < edges.Length; i++) {
             UpdateEdge(edges[i], rotatedPolyhendron.Edges[i].Vertex1, rotatedPolyhendron.Edges[i].Vertex2);
         }
+
+        UpdateFaces(faces.GetComponent<MeshFilter>(), rotatedPolyhendron);
+        //var mf = faces.GetComponent<MeshFilter>();
+        //mf.mesh.vertices = mf.mesh.vertices.Select(x => (polyRotation * (Vector4)x).Reduce()).ToArray();
+        //mf.mesh.normals = mf.mesh.vertices.Select(x => (polyRotation * (Vector4)x).Reduce()).ToArray();
     }
 }
