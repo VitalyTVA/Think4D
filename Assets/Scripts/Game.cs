@@ -16,9 +16,9 @@ public class Game : MonoBehaviour {
     Matrix4x4 polyRotation = Matrix4x4.identity;
     void Start() {
 
-        faces = CreateFaces(faceMaterial);
-
         var polyhedron = GetPoly(Matrix4x4.identity);
+
+        faces = CreateFaces(faceMaterial, Polyhedron.Cube3D);
 
         root = new GameObject("Cube");
         root.transform.position = Vector3.zero;
@@ -48,7 +48,42 @@ public class Game : MonoBehaviour {
         }, 1);
     }
 
-    static GameObject CreateFaces(Material material) {
+    static GameObject CreateFaces(Material material, Polyhedron<Vector3> polyhedron) {
+        var faces = new GameObject("Faces", typeof(MeshFilter), typeof(MeshRenderer));
+        faces.GetComponent<MeshRenderer>().material = material;
+        var mf = faces.GetComponent<MeshFilter>();
+        var mesh = new Mesh();
+        mf.mesh = mesh;
+
+
+        var faceMeshes = polyhedron.Faces.Select(face => {
+            var vertices = face.Vertexes;
+
+            var triangles = vertices.Skip(1).Take(face.Vertexes.Count - 2).SelectMany((x, i) => new[] { 0, i + 1, i + 2 });
+
+            var normal = Vector3.Cross(vertices[1] - vertices[0], vertices[2] - vertices[0]).normalized;
+            var normals = Enumerable.Repeat(normal, face.Vertexes.Count);
+
+            var uvs = Enumerable.Repeat(new Vector2(0, 0), face.Vertexes.Count);
+            return new {
+                vertices, triangles, normals, uvs
+            };
+        });
+
+        mesh.vertices = faceMeshes.SelectMany(x => x.vertices).ToArray();
+        var trianglesCount = 0;
+        mesh.triangles = faceMeshes.SelectMany(x => {
+            var result = x.triangles.Concat(x.triangles.Reverse()).Select(i => i + trianglesCount).ToArray();
+            trianglesCount += x.vertices.Count;
+            return result;
+        }).ToArray();
+        mesh.normals = faceMeshes.SelectMany(x => x.normals).ToArray();
+        mesh.uv = faceMeshes.SelectMany(x => x.uvs).ToArray();
+
+        return faces;
+    }
+
+    static GameObject CreateFaces_(Material material, Polyhedron<Vector3> polyhedron) {
         var width = 2;
         var height = 2;
         var faces = new GameObject("Faces", typeof(MeshFilter), typeof(MeshRenderer));
