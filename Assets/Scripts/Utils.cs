@@ -19,21 +19,32 @@ public class Edge<T> {
         return new Edge<TNew>(map(Vertex1), map(Vertex2));
     }
 }
+public class Face<T> {
+    public readonly ReadOnlyCollection<T> Vertexes;
+    public Face(ReadOnlyCollection<T> vertexes) {
+        Vertexes = vertexes;
+    }
+    public Face<TNew> FMap<TNew>(Func<T, TNew> map) {
+        return new Face<TNew>(Vertexes.Select(map).ToReadOnly());
+    }
+}
 public class Polyhedron<T> {
     public readonly ReadOnlyCollection<T> Vertexes;
     public readonly ReadOnlyCollection<Edge<T>> Edges;
-    public Polyhedron(ReadOnlyCollection<T> vertexes, ReadOnlyCollection<Edge<T>> edges) {
+    public readonly ReadOnlyCollection<Face<T>> Faces;
+    public Polyhedron(ReadOnlyCollection<T> vertexes, ReadOnlyCollection<Edge<T>> edges, ReadOnlyCollection<Face<T>> faces) {
         Vertexes = vertexes;
         Edges = edges;
+        Faces = faces;
     }
     public Polyhedron<TNew> FMap<TNew>(Func<T, TNew> map) {
-        return Polyhedron.Create(Vertexes.Select(map), Edges.Select(x => x.FMap(map)));
+        return Polyhedron.Create(Vertexes.Select(map), Edges.Select(x => x.FMap(map)), Faces.Select(x => x.FMap(map)));
     }
 }
 public static class Polyhedron {
     public const float CubeSize = 1;
 
-    public static readonly Polyhedron<Void> Cube0D = Create(Void.Instance.Yield(), Enumerable.Empty<Edge<Void>>());
+    public static readonly Polyhedron<Void> Cube0D = Create(Void.Instance.Yield(), Enumerable.Empty<Edge<Void>>(), Enumerable.Empty<Face<Void>>());
    
     public static readonly Polyhedron<float> Cube1D = MakePrism(Cube0D, (x, nextCoord) => nextCoord, CubeSize);
 
@@ -44,17 +55,20 @@ public static class Polyhedron {
     public static readonly Polyhedron<Vector4> Cube4D = MakePrism(Cube3D, (x, nextCoord) => new Vector4(x.x, x.y, x.z, nextCoord), CubeSize);
    
 
-    public static Polyhedron<T> Create<T>(IEnumerable<T> vertexes, IEnumerable<Edge<T>> edges) {
-        return new Polyhedron<T>(vertexes.ToReadOnly(), edges.ToReadOnly());
+    public static Polyhedron<T> Create<T>(IEnumerable<T> vertexes, IEnumerable<Edge<T>> edges, IEnumerable<Face<T>> faces) {
+        return new Polyhedron<T>(vertexes.ToReadOnly(), edges.ToReadOnly(), faces.ToReadOnly());
     }
 
     public static Polyhedron<TNPlus1> MakePrism<TN, TNPlus1>(this Polyhedron<TN> polyhedron, Func<TN, float, TNPlus1> addDimension, float newDimensionSize) {
         var bottom = polyhedron.FMap((TN x) => addDimension(x, -newDimensionSize / 2));
         var top = polyhedron.FMap((TN x) => addDimension(x, newDimensionSize / 2));
         var newEdges = bottom.Vertexes.Zip(top.Vertexes, (v1, v2) => new Edge<TNPlus1>(v1, v2));
+        var newFaces = Enumerable.Empty<Face<TNPlus1>>();
         return Create(
             bottom.Vertexes.Concat(top.Vertexes),
-            bottom.Edges.Concat(top.Edges).Concat(newEdges));
+            bottom.Edges.Concat(top.Edges).Concat(newEdges),
+            bottom.Faces.Concat(top.Faces).Concat(newFaces)
+            );
     }
 
     public static Vector3 Reduce(this Vector4 p) {
