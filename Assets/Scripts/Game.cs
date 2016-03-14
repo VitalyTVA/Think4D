@@ -6,13 +6,18 @@ using System;
 public class Game : MonoBehaviour {
     public GameObject vertex;
     public GameObject edge;
+    public Material faceMaterial;
     public float rotationSpeed = 1;
     GameObject[] vertexes, edges;
     GameObject root;
+    GameObject faces;
     RotationHelper rotationHelper;
     RotationHelper rotationHelper2;
     Matrix4x4 polyRotation = Matrix4x4.identity;
     void Start() {
+
+        faces = CreateFaces(faceMaterial);
+
         var polyhedron = GetPoly(Matrix4x4.identity);
 
         root = new GameObject("Cube");
@@ -41,6 +46,57 @@ public class Game : MonoBehaviour {
 
             return rotation;
         }, 1);
+    }
+
+    static GameObject CreateFaces(Material material) {
+        var width = 2;
+        var height = 2;
+        var faces = new GameObject("Faces", typeof(MeshFilter), typeof(MeshRenderer));
+        faces.GetComponent<MeshRenderer>().material = material;
+        var mf = faces.GetComponent<MeshFilter>();
+        var mesh = new Mesh();
+        mf.mesh = mesh;
+
+        var vertices = new Vector3[4];
+
+        vertices[0] = new Vector3(0, 0, 0);
+        vertices[1] = new Vector3(width, 0, 0);
+        vertices[2] = new Vector3(0, height, 0);
+        vertices[3] = new Vector3(width, height, 0);
+
+        mesh.vertices = vertices;
+
+        var tri = new int[6];
+
+        tri[0] = 0;
+        tri[1] = 2;
+        tri[2] = 1;
+
+        tri[3] = 2;
+        tri[4] = 3;
+        tri[5] = 1;
+
+        mesh.triangles = tri;
+
+        var normals = new Vector3[4];
+
+        normals[0] = -Vector3.forward;
+        normals[1] = -Vector3.forward;
+        normals[2] = -Vector3.forward;
+        normals[3] = -Vector3.forward;
+
+        mesh.normals = normals;
+
+        var uv = new Vector2[4];
+
+        uv[0] = new Vector2(0, 0);
+        uv[1] = new Vector2(1, 0);
+        uv[2] = new Vector2(0, 1);
+        uv[3] = new Vector2(1, 1);
+
+        mesh.uv = uv;
+
+        return faces;
     }
 
     static Polyhedron<Vector3> GetPoly(Matrix4x4 m) {

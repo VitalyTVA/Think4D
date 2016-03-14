@@ -200,6 +200,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   vertex: {fileID: 111988, guid: 1f1cf9497c9970e4bbc159a8188fd1b7, type: 2}
   edge: {fileID: 115612, guid: 07f5735528d44e740b93af23cbe15814, type: 2}
+  faceMaterial: {fileID: 2100000, guid: 446a2bff637aae1458027db0b869b0e5, type: 2}
   rotationSpeed: 2
 --- !u!4 &210574452
 Transform:
