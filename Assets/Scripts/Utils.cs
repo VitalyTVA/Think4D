@@ -53,16 +53,16 @@ public static class Polyhedron {
         = Create(Void.Instance.Yield(), Enumerable.Empty<Edge<Void>>(), Enumerable.Empty<Face<Void>>());
    
     public static readonly Polyhedron<float> Cube1D 
-        = MakePrism(Cube0D, (x, nextCoord) => nextCoord, CubeSize, (top, bottom) => Enumerable.Empty<Face<float>>());
+        = MakePrism(Cube0D, (x, nextCoord) => nextCoord, CubeSize);
 
     public static readonly Polyhedron<Vector2> Cube2D 
-        = MakePrism(Cube1D, (x, nextCoord) => new Vector2(x, nextCoord), CubeSize, (top, bottom) => Face.Create(top.Vertexes.Concat(bottom.Vertexes.Reverse())).Yield());
+        = MakePrism(Cube1D, (x, nextCoord) => new Vector2(x, nextCoord), CubeSize);
 
     public static readonly Polyhedron<Vector3> Cube3D 
-        = MakePrism(Cube2D, (x, nextCoord) => new Vector3(x.x, x.y, nextCoord), CubeSize, CombinePrismFaces<Vector3>);
+        = MakePrism(Cube2D, (x, nextCoord) => new Vector3(x.x, x.y, nextCoord), CubeSize);
 
     public static readonly Polyhedron<Vector4> Cube4D 
-        = MakePrism(Cube3D, (x, nextCoord) => new Vector4(x.x, x.y, x.z, nextCoord), CubeSize, CombinePrismFaces<Vector4>);
+        = MakePrism(Cube3D, (x, nextCoord) => new Vector4(x.x, x.y, x.z, nextCoord), CubeSize);
 
 
     static IEnumerable<Face<T>> CombinePrismFaces<T>(Polyhedron<T> top, Polyhedron<T> bottom) {
@@ -75,12 +75,11 @@ public static class Polyhedron {
         return new Polyhedron<T>(vertexes.ToReadOnly(), edges.ToReadOnly(), faces.ToReadOnly());
     }
 
-    public static Polyhedron<TNPlus1> MakePrism<TN, TNPlus1>(this Polyhedron<TN> polyhedron, Func<TN, float, TNPlus1> addDimension, float newDimensionSize, 
-        Func<Polyhedron<TNPlus1>, Polyhedron<TNPlus1>, IEnumerable<Face<TNPlus1>>> getFaces) {
+    public static Polyhedron<TNPlus1> MakePrism<TN, TNPlus1>(this Polyhedron<TN> polyhedron, Func<TN, float, TNPlus1> addDimension, float newDimensionSize) {
         var bottom = polyhedron.FMap((TN x) => addDimension(x, -newDimensionSize / 2));
         var top = polyhedron.FMap((TN x) => addDimension(x, newDimensionSize / 2));
         var newEdges = bottom.Vertexes.Zip(top.Vertexes, (v1, v2) => new Edge<TNPlus1>(v1, v2));
-        var faces = getFaces(bottom, top);
+        var faces = CombinePrismFaces(bottom, top);
         return Create(
             bottom.Vertexes.Concat(top.Vertexes),
             bottom.Edges.Concat(top.Edges).Concat(newEdges),
