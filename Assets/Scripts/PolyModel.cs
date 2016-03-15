@@ -24,6 +24,11 @@ public class PolyModel {
         edges = polyhedron.Edges.Select(x => AddEdge(owner.edge, root)).ToArray();
     }
 
+    public void Destroy() {
+        Object.Destroy(root);
+        Object.Destroy(faces);
+    }
+
     public void Update(Matrix4x4 polyRotation) {
         var rotatedPolyhendron = GetPoly(polyRotation);
         for(int i = 0; i < vertexes.Length; i++) {

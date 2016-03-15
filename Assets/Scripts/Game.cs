@@ -14,8 +14,15 @@ public class Game : MonoBehaviour {
 
     PolyModel polyModel;
 
+    static readonly PolyInfo[] Infos = new PolyInfo[] {
+        Polyhedron.Cube4D.ToPolyInfo(),
+        Polyhedron.Cube3D.ToPolyInfo(),
+    };
+
+    int currentIndex = 0;
+
     void Start() {
-        polyModel = new PolyModel(this, Polyhedron.Cube4D.ToPolyInfo());
+        polyModel = CreateNextModel();
 
 
         rotationHelper = new RotationHelper(x => {
@@ -23,16 +30,26 @@ public class Game : MonoBehaviour {
         }, () => polyRotation, x => x, 0);
         rotationHelper2 = new RotationHelper(x => {
             polyRotation = x;
-        }, () => polyRotation, polyModel.polyInfo.AlternateRotationMatrix, 1);
+        }, () => polyRotation, m => polyModel.polyInfo.AlternateRotationMatrix(m), 1);
 
     }
 
     
     void Update () {
+        if(Input.GetMouseButtonDown(2)) {
+            polyModel.Destroy();
+            polyModel = CreateNextModel();
+        }
         rotationHelper.Update();
         rotationHelper2.Update();
 
         polyModel.Update(polyRotation);
 
+    }
+
+    private PolyModel CreateNextModel() {
+        var index = currentIndex % Infos.Length;
+        currentIndex++;
+        return new PolyModel(this, Infos[index]);
     }
 }
