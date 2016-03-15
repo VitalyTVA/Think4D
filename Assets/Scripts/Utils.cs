@@ -218,9 +218,9 @@ public struct HyperPlane4 {
 }
 public class PolyInfo {
     public readonly Func<Matrix4x4, Polyhedron<Vector3>> GetPoly;
-    public readonly Func<Matrix4x4, Matrix4x4> AlternateRortationMatrix;
+    public readonly Func<Matrix4x4, Matrix4x4> AlternateRotationMatrix;
     public PolyInfo(Func<Matrix4x4, Polyhedron<Vector3>> getPoly, Func<Matrix4x4, Matrix4x4> alternateRortationMatrix) {
         GetPoly = getPoly;
-        AlternateRortationMatrix = alternateRortationMatrix;
+        AlternateRotationMatrix = alternateRortationMatrix;
     }
 }
