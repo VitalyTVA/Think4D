@@ -14,11 +14,13 @@ public class Game : MonoBehaviour {
     RotationHelper rotationHelper;
     RotationHelper rotationHelper2;
     Matrix4x4 polyRotation = Matrix4x4.identity;
+
+    PolyInfo polyInfo = Polyhedron.Cube4D.ToPolyInfo();
+    //PolyInfo polyInfo = Polyhedron.Cube3D.ToPolyInfo();
     void Start() {
 
         var polyhedron = GetPoly(Matrix4x4.identity);
 
-        //faces = CreateFaces(faceMaterial, Polyhedron.Cube3D);
         faces = CreateFaces(faceMaterial);
 
         root = new GameObject("Cube");
@@ -32,21 +34,7 @@ public class Game : MonoBehaviour {
         }, () => polyRotation, x => x, 0);
         rotationHelper2 = new RotationHelper(x => {
             polyRotation = x;
-        }, () => polyRotation, rotation => {
-            rotation[3, 0] = rotation[2, 0];
-            rotation[3, 1] = rotation[2, 1];
-            rotation[0, 3] = rotation[0, 2];
-            rotation[1, 3] = rotation[1, 2];
-            rotation[3, 3] = rotation[2, 2];
-
-            rotation[2, 0] = 0;
-            rotation[2, 1] = 0;
-            rotation[0, 2] = 0;
-            rotation[1, 2] = 0;
-            rotation[2, 2] = 1;
-
-            return rotation;
-        }, 1);
+        }, () => polyRotation, polyInfo.AlternateRortationMatrix, 1);
     }
 
     static GameObject CreateFaces(Material material) {
@@ -88,8 +76,8 @@ public class Game : MonoBehaviour {
         mesh.uv = faceMeshes.SelectMany(x => x.uvs).ToArray();
     }
 
-    static Polyhedron<Vector3> GetPoly(Matrix4x4 m) {
-        return Polyhedron.Cube4D.FMap(x => m * x).Project(new Vector4(0, 0, 0, 3), new HyperPlane4(Vector4.zero, new Vector4(0, 0, 0, 1)));
+    Polyhedron<Vector3> GetPoly(Matrix4x4 m) {
+        return polyInfo.GetPoly(m);
     }
 
     static GameObject AddVertex(GameObject prefab, GameObject parent) {

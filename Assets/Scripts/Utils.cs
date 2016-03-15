@@ -71,6 +71,29 @@ public static class Polyhedron {
         return top.Faces.Concat(bottom.Faces).Concat(newFaces);
     }
 
+    public static PolyInfo ToPolyInfo(this Polyhedron<Vector3> poly) {
+        return new PolyInfo(m => poly.FMap(x => (m * x.Expand()).Reduce()), m => m);
+    }
+
+    public static PolyInfo ToPolyInfo(this Polyhedron<Vector4> poly) {
+        return new PolyInfo(
+            m => poly.FMap(x => m * x).Project(new Vector4(0, 0, 0, 3), new HyperPlane4(Vector4.zero, new Vector4(0, 0, 0, 1))),
+            m => {
+                m[3, 0] = m[2, 0];
+                m[3, 1] = m[2, 1];
+                m[0, 3] = m[0, 2];
+                m[1, 3] = m[1, 2];
+                m[3, 3] = m[2, 2];
+
+                m[2, 0] = 0;
+                m[2, 1] = 0;
+                m[0, 2] = 0;
+                m[1, 2] = 0;
+                m[2, 2] = 1;
+                return m;
+            });
+    }
+
     public static Polyhedron<T> Create<T>(IEnumerable<T> vertexes, IEnumerable<Edge<T>> edges, IEnumerable<Face<T>> faces) {
         return new Polyhedron<T>(vertexes.ToReadOnly(), edges.ToReadOnly(), faces.ToReadOnly());
     }
@@ -89,6 +112,9 @@ public static class Polyhedron {
 
     public static Vector3 Reduce(this Vector4 p) {
         return new Vector3(p.x, p.y, p.z);
+    }
+    public static Vector4 Expand(this Vector3 p) {
+        return new Vector4(p.x, p.y, p.z, 0);
     }
 
     public static Polyhedron<Vector3> Project(this Polyhedron<Vector4> polyhedron, Vector4 projectionPoint, HyperPlane4 plane) {
@@ -188,5 +214,13 @@ public struct HyperPlane4 {
     public HyperPlane4(Vector4 point, Vector4 normal) {
         Point = point;
         Normal = normal;
+    }
+}
+public class PolyInfo {
+    public readonly Func<Matrix4x4, Polyhedron<Vector3>> GetPoly;
+    public readonly Func<Matrix4x4, Matrix4x4> AlternateRortationMatrix;
+    public PolyInfo(Func<Matrix4x4, Polyhedron<Vector3>> getPoly, Func<Matrix4x4, Matrix4x4> alternateRortationMatrix) {
+        GetPoly = getPoly;
+        AlternateRortationMatrix = alternateRortationMatrix;
     }
 }
