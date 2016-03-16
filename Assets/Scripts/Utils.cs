@@ -48,12 +48,13 @@ public class Polyhedron<T> {
 }
 public static class Polyhedron {
     public const float CubeSize = 1;
+    public const float SimplexSize = CubeSize * 2;
 
-    public static readonly Polyhedron<Void> Cube0D
+    public static readonly Polyhedron<Void> Point
         = Create(Void.Instance.Yield(), Enumerable.Empty<Edge<Void>>(), Enumerable.Empty<Face<Void>>());
 
     public static readonly Polyhedron<float> Cube1D
-        = MakePrism<Void, float>(Cube0D, Expand0, CubeSize);
+        = MakePrism<Void, float>(Point, Expand0, CubeSize);
 
     public static readonly Polyhedron<Vector2> Cube2D
         = MakePrism<float, Vector2>(Cube1D, Expand1, CubeSize);
@@ -64,11 +65,17 @@ public static class Polyhedron {
     public static readonly Polyhedron<Vector4> Cube4D
         = MakePrism<Vector3, Vector4>(Cube3D, Expand3, CubeSize);
 
-    static IEnumerable<Face<T>> CombinePrismFaces<T>(Polyhedron<T> top, Polyhedron<T> bottom) {
-        var newFaces = top.Edges.Zip(bottom.Edges,
-            (x, y) => Face.Create(new[] { x.Vertex1, x.Vertex2, y.Vertex2, y.Vertex1 }));
-        return top.Faces.Concat(bottom.Faces).Concat(newFaces);
-    }
+    public static readonly Polyhedron<float> Simplex1D
+        = MakeSimplex<Void, float>(Point, Expand0, SimplexSize);
+
+    public static readonly Polyhedron<Vector2> Simplex2D
+        = MakeSimplex<float, Vector2>(Cube1D, Expand1, SimplexSize);
+
+    public static readonly Polyhedron<Vector3> Simplex3D
+        = MakeSimplex<Vector2, Vector3>(Simplex2D, Expand2, SimplexSize);
+
+    public static readonly Polyhedron<Vector4> Simplex4D
+        = MakeSimplex<Vector3, Vector4>(Simplex3D, Expand3, SimplexSize);
 
     public static PolyInfo ToPolyInfo(this Polyhedron<Vector3> poly) {
         return new PolyInfo(m => poly.FMap(x => (m * x.Expand3()).Reduce4()), m => m);
@@ -97,7 +104,7 @@ public static class Polyhedron {
         return new Polyhedron<T>(vertexes.ToReadOnly(), edges.ToReadOnly(), faces.ToReadOnly());
     }
 
-    public static Polyhedron<TNPlus1> MakePrism<TN, TNPlus1>(this Polyhedron<TN> polyhedron, Func<TN, float, TNPlus1> addDimension, float newDimensionSize) {
+    static Polyhedron<TNPlus1> MakePrism<TN, TNPlus1>(this Polyhedron<TN> polyhedron, Func<TN, float, TNPlus1> addDimension, float newDimensionSize) {
         var bottom = polyhedron.FMap((TN x) => addDimension(x, -newDimensionSize / 2));
         var top = polyhedron.FMap((TN x) => addDimension(x, newDimensionSize / 2));
         var newEdges = bottom.Vertexes.Zip(top.Vertexes, (v1, v2) => new Edge<TNPlus1>(v1, v2));
@@ -108,6 +115,28 @@ public static class Polyhedron {
             faces
             );
     }
+    static IEnumerable<Face<T>> CombinePrismFaces<T>(Polyhedron<T> top, Polyhedron<T> bottom) {
+        var newFaces = top.Edges.Zip(bottom.Edges,
+            (x, y) => Face.Create(new[] { x.Vertex1, x.Vertex2, y.Vertex2, y.Vertex1 }));
+        return top.Faces.Concat(bottom.Faces).Concat(newFaces);
+    }
+
+    static Polyhedron<TNPlus1> MakeSimplex<TN, TNPlus1>(this Polyhedron<TN> simplex, Func<TN, float, TNPlus1> addDimension, float edgeSize) {
+        var n = (float)simplex.Vertexes.Count;
+        var r = edgeSize * Mathf.Sqrt(n / (2 * (n + 1)));
+        var d = r / n;
+
+        var bottom = simplex.FMap((TN x) => addDimension(x, -d));
+        var top = addDimension(default(TN), r);
+        //var newEdges = bottom.Vertexes.Zip(top.Vertexes, (v1, v2) => new Edge<TNPlus1>(v1, v2));
+        var faces = Enumerable.Empty<Face<TNPlus1>>();
+        return Create(
+            bottom.Vertexes.Concat(top.Yield()),
+            bottom.Edges.Concat(bottom.Vertexes.Select(x => new Edge<TNPlus1>(x, top))),
+            faces
+            );
+    }
+
 
     public static float Expand0(Void @void, float nextCoord) {
         return nextCoord;
