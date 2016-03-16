@@ -41,6 +41,7 @@ public class Game : MonoBehaviour {
         if(Input.GetMouseButtonDown(2)) {
             polyModel.Destroy();
             polyModel = CreateNextModel();
+            polyRotation = Matrix4x4.identity;
         }
         rotationHelper.Update();
         rotationHelper2.Update();
