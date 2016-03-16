@@ -129,11 +129,11 @@ public static class Polyhedron {
         var bottom = simplex.FMap((TN x) => addDimension(x, -d));
         var top = addDimension(default(TN), r);
         //var newEdges = bottom.Vertexes.Zip(top.Vertexes, (v1, v2) => new Edge<TNPlus1>(v1, v2));
-        var faces = Enumerable.Empty<Face<TNPlus1>>();
+        var newFaces = bottom.Vertexes.Zip(bottom.Vertexes.Skip(1).Concat(bottom.Vertexes.Take(1)), (x, y) => Face.Create(new[] { top, x, y }));
         return Create(
             bottom.Vertexes.Concat(top.Yield()),
             bottom.Edges.Concat(bottom.Vertexes.Select(x => new Edge<TNPlus1>(x, top))),
-            faces
+            bottom.Faces.Concat(newFaces)
             );
     }
 
