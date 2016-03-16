@@ -69,7 +69,7 @@ public static class Polyhedron {
         = MakeSimplex<Void, float>(Point, Expand0, SimplexSize);
 
     public static readonly Polyhedron<Vector2> Simplex2D
-        = MakeSimplex<float, Vector2>(Cube1D, Expand1, SimplexSize);
+        = MakeSimplex<float, Vector2>(Simplex1D, Expand1, SimplexSize);
 
     public static readonly Polyhedron<Vector3> Simplex3D
         = MakeSimplex<Vector2, Vector3>(Simplex2D, Expand2, SimplexSize);
