@@ -49,30 +49,29 @@ public class Polyhedron<T> {
 public static class Polyhedron {
     public const float CubeSize = 1;
 
-    public static readonly Polyhedron<Void> Cube0D 
+    public static readonly Polyhedron<Void> Cube0D
         = Create(Void.Instance.Yield(), Enumerable.Empty<Edge<Void>>(), Enumerable.Empty<Face<Void>>());
-   
-    public static readonly Polyhedron<float> Cube1D 
-        = MakePrism(Cube0D, (x, nextCoord) => nextCoord, CubeSize);
 
-    public static readonly Polyhedron<Vector2> Cube2D 
-        = MakePrism(Cube1D, (x, nextCoord) => new Vector2(x, nextCoord), CubeSize);
+    public static readonly Polyhedron<float> Cube1D
+        = MakePrism<Void, float>(Cube0D, Expand0, CubeSize);
 
-    public static readonly Polyhedron<Vector3> Cube3D 
-        = MakePrism(Cube2D, (x, nextCoord) => new Vector3(x.x, x.y, nextCoord), CubeSize);
+    public static readonly Polyhedron<Vector2> Cube2D
+        = MakePrism<float, Vector2>(Cube1D, Expand1, CubeSize);
 
-    public static readonly Polyhedron<Vector4> Cube4D 
-        = MakePrism(Cube3D, (x, nextCoord) => new Vector4(x.x, x.y, x.z, nextCoord), CubeSize);
+    public static readonly Polyhedron<Vector3> Cube3D
+        = MakePrism<Vector2, Vector3>(Cube2D, Expand2, CubeSize);
 
+    public static readonly Polyhedron<Vector4> Cube4D
+        = MakePrism<Vector3, Vector4>(Cube3D, Expand3, CubeSize);
 
     static IEnumerable<Face<T>> CombinePrismFaces<T>(Polyhedron<T> top, Polyhedron<T> bottom) {
-        var newFaces = top.Edges.Zip(bottom.Edges, 
+        var newFaces = top.Edges.Zip(bottom.Edges,
             (x, y) => Face.Create(new[] { x.Vertex1, x.Vertex2, y.Vertex2, y.Vertex1 }));
         return top.Faces.Concat(bottom.Faces).Concat(newFaces);
     }
 
     public static PolyInfo ToPolyInfo(this Polyhedron<Vector3> poly) {
-        return new PolyInfo(m => poly.FMap(x => (m * x.Expand()).Reduce()), m => m);
+        return new PolyInfo(m => poly.FMap(x => (m * x.Expand3()).Reduce4()), m => m);
     }
 
     public static PolyInfo ToPolyInfo(this Polyhedron<Vector4> poly) {
@@ -110,11 +109,20 @@ public static class Polyhedron {
             );
     }
 
-    public static Vector3 Reduce(this Vector4 p) {
+    public static float Expand0(Void @void, float nextCoord) {
+        return nextCoord;
+    }
+    public static Vector2 Expand1(float x, float nextCoord) {
+        return new Vector2(x, nextCoord);
+    }
+    public static Vector3 Expand2(Vector2 x, float nextCoord) {
+        return new Vector3(x.x, x.y, nextCoord);
+    }
+    public static Vector3 Reduce4(this Vector4 p) {
         return new Vector3(p.x, p.y, p.z);
     }
-    public static Vector4 Expand(this Vector3 p) {
-        return new Vector4(p.x, p.y, p.z, 0);
+    public static Vector4 Expand3(this Vector3 p, float next = 0) {
+        return new Vector4(p.x, p.y, p.z, next);
     }
 
     public static Polyhedron<Vector3> Project(this Polyhedron<Vector4> polyhedron, Vector4 projectionPoint, HyperPlane4 plane) {
@@ -123,7 +131,7 @@ public static class Polyhedron {
     public static Vector3 Project(this Vector4 point, Vector4 projectionPoint, HyperPlane4 plane) {
         var line = Line4.LineFromTo(point, projectionPoint);
         var intersection = line.IntersectWith(plane);
-        return intersection.Reduce();
+        return intersection.Reduce4();
     }
     public static Vector3? NearestIntersectWithOriginsSphere(this Ray ray, float r) {
         var a = ray.direction.sqrMagnitude;
@@ -156,7 +164,7 @@ public static class Polyhedron {
         result.w = q.w * inv;
         return result;
     }
-    public static Matrix4x4  Normalize(this Matrix4x4 m) {
+    public static Matrix4x4 Normalize(this Matrix4x4 m) {
         //var det = m.determinant;
         //for(int i = 0; i < 16; i++) {
         //    m[i] = m[i] / det;
