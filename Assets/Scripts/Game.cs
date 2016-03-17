@@ -15,10 +15,12 @@ public class Game : MonoBehaviour {
     PolyModel polyModel;
 
     static readonly PolyInfo[] Infos = new PolyInfo[] {
+        Polyhedron.Orthoplex3D.ToPolyInfo(),
+        Polyhedron.Orthoplex4D.ToPolyInfo(),
         Polyhedron.Simplex3D.ToPolyInfo(),
         Polyhedron.Simplex4D.ToPolyInfo(),
-        Polyhedron.Cube4D.ToPolyInfo(),
         Polyhedron.Cube3D.ToPolyInfo(),
+        Polyhedron.Cube4D.ToPolyInfo(),
     };
 
     int currentIndex = 0;
