@@ -15,6 +15,7 @@ public class Game : MonoBehaviour {
     PolyModel polyModel;
 
     static readonly PolyInfo[] Infos = new PolyInfo[] {
+        Polyhedron.Orthoplex2D.FMap(x => x.Expand2()).ToPolyInfo(),
         Polyhedron.Orthoplex3D.ToPolyInfo(),
         Polyhedron.Orthoplex4D.ToPolyInfo(),
         Polyhedron.Simplex3D.ToPolyInfo(),

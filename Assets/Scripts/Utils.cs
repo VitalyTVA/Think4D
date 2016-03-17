@@ -105,7 +105,7 @@ public static class Polyhedron {
 
         var bottom = simplex.FMap((TN x) => addDimension(x, -d));
         var top = addDimension(default(TN), r);
-        var newFaces = bottom.Vertexes.Round().Select(x => Face.Create(new[] { top, x.Vertex1, x.Vertex2 }));
+        var newFaces = bottom.Vertexes.Zip(bottom.Vertexes.HeadToTail(), (x, y) => Face.Create(new[] { top, x, y }));
         return Create(
             bottom.Vertexes.Concat(top.Yield()),
             bottom.Edges.Concat(bottom.Vertexes.Select(x => new Edge<TNPlus1>(x, top))),
@@ -115,29 +115,39 @@ public static class Polyhedron {
     #endregion
 
     #region orthoplex
+    //public static readonly Polyhedron<float> Orthoplex1D
+    //    = MakeSimplex<Void, float>(Point, Expand0, OrthoplexSize);
+
     public static readonly Polyhedron<Vector2> Orthoplex2D
-        = MakeOrthoplex<float, Vector2>(Cube1D, Expand1, OrthoplexSize);
+        //= MakeOrthoplex<float, Vector2>(Orthoplex1D, Expand1, OrthoplexSize);
+        //= MakeOrthoplex<float, Vector2>(Polyhedron.Create<float>(new[] { OrthoplexSize / 1.4142135623730950488016887242097f, OrthoplexSize / 1.4142135623730950488016887242097f }, Enumerable.Empty<Edge<float>>(), Enumerable.Empty<Face<float>>()), Expand1, OrthoplexSize); //TODO
+        = MakeOrthoplex<float, Vector2>(Simplex1D.FMap(x => x / 1.4142135623730950488016887242097f), Expand1, OrthoplexSize); //TODO
 
     public static readonly Polyhedron<Vector3> Orthoplex3D
         = MakeOrthoplex<Vector2, Vector3>(Orthoplex2D, Expand2, OrthoplexSize);
+        //= MakeOrthoplex<Vector2, Vector3>(Cube2D.FMap(x => x / 1.4142135623730950488016887242097f), Expand2, OrthoplexSize);
 
     public static readonly Polyhedron<Vector4> Orthoplex4D
         = MakeOrthoplex<Vector3, Vector4>(Orthoplex3D, Expand3, OrthoplexSize);
 
     static Polyhedron<TNPlus1> MakeOrthoplex<TN, TNPlus1>(this Polyhedron<TN> orthoplex, Func<TN, float, TNPlus1> addDimension, float edgeSize) {
-        //var r = edgeSize / Mathf.Sqrt(2);
-        //var top = addDimension(default(TN), r);
-        //var bottom = addDimension(default(TN), -r);
+        var r = edgeSize / Mathf.Sqrt(2);
+        var top = addDimension(default(TN), r);
+        var bottom = addDimension(default(TN), -r);
 
-        //var baseOrthoplex = orthoplex.FMap(x => addDimension(x, 0));
-        //var newEdges = baseOrthoplex.Vertexes.SelectMany(x => new[] { top, bottom }, (x, y) => new Edge<TNPlus1>(x, y));
-        //var newFaces = Enumerable.Empty<Face<TNPlus1>>();
-        //return Create(
-        //    baseOrthoplex.Vertexes.Concat(new[] { top, bottom }),
-        //    baseOrthoplex.Vertexes.Round().Concat(newEdges),
-        //    newFaces
-        //    );
-        return null;
+        var baseOrthoplex = orthoplex.FMap<TNPlus1>(x => addDimension(x, 0));
+        var oldEdges = baseOrthoplex.Vertexes.Count > 2
+            //? baseOrthoplex.Vertexes.Zip(baseOrthoplex.Vertexes.HeadToTail(), (x, y) => new Edge<TNPlus1>(x, y)) 
+            ? baseOrthoplex.Edges
+            : Enumerable.Empty<Edge<TNPlus1>>();
+        var newTopEdges = baseOrthoplex.Vertexes.Select(x => new Edge<TNPlus1>(x, top));
+        var newBottomEdges = baseOrthoplex.Vertexes.Select(x => new Edge<TNPlus1>(x, bottom));
+        var newFaces = Enumerable.Empty<Face<TNPlus1>>();
+        return Create(
+            baseOrthoplex.Vertexes.Concat(new[] { top, bottom }),
+            oldEdges.Concat(newTopEdges).Concat(newBottomEdges),
+            newFaces
+            );
     }
     #endregion
 
@@ -173,10 +183,10 @@ public static class Polyhedron {
     public static float Expand0(Void @void, float nextCoord) {
         return nextCoord;
     }
-    public static Vector2 Expand1(float x, float nextCoord) {
+    public static Vector2 Expand1(float x, float nextCoord = 0) {
         return new Vector2(x, nextCoord);
     }
-    public static Vector3 Expand2(Vector2 x, float nextCoord) {
+    public static Vector3 Expand2(this Vector2 x, float nextCoord = 0) {
         return new Vector3(x.x, x.y, nextCoord);
     }
     public static Vector3 Reduce4(this Vector4 p) {
@@ -233,9 +243,6 @@ public static class Polyhedron {
         return m;
     }
 
-    public static IEnumerable<Edge<T>> Round<T>(this IEnumerable<T> vertexes) {
-        return vertexes.Zip(vertexes.Skip(1).Concat(vertexes.Take(1)), (x, y) => new Edge<T>(x, y));
-    }
 }
 public static class LinqExtensions {
     public static ReadOnlyCollection<T> ToReadOnly<T>(this IEnumerable<T> source) {
@@ -258,6 +265,9 @@ public static class LinqExtensions {
                 throw new InvalidOperationException();
             }
         }
+    }
+    public static IEnumerable<T> HeadToTail<T>(this IEnumerable<T> source) {
+        return source.Skip(1).Concat(source.Take(1));
     }
 }
 public struct Line4 {
