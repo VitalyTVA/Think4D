@@ -49,7 +49,7 @@ public class Polyhedron<T> {
 public static class Polyhedron {
     public const float CubeSize = 1;
     public const float SimplexSize = CubeSize * 2;
-    public const float OrthoplexSize = 1;
+    public const float OrthoplexSize = 2;
 
     public static readonly Polyhedron<Void> Point
         = Create(Void.Instance.Yield(), Enumerable.Empty<Edge<Void>>(), Enumerable.Empty<Face<Void>>());
@@ -115,17 +115,14 @@ public static class Polyhedron {
     #endregion
 
     #region orthoplex
-    //public static readonly Polyhedron<float> Orthoplex1D
-    //    = MakeSimplex<Void, float>(Point, Expand0, OrthoplexSize);
+    public static readonly Polyhedron<float> Orthoplex1D
+        = MakeSimplex<Void, float>(Point, Expand0, OrthoplexSize * Mathf.Sqrt(2));
 
     public static readonly Polyhedron<Vector2> Orthoplex2D
-        //= MakeOrthoplex<float, Vector2>(Orthoplex1D, Expand1, OrthoplexSize);
-        //= MakeOrthoplex<float, Vector2>(Polyhedron.Create<float>(new[] { OrthoplexSize / 1.4142135623730950488016887242097f, OrthoplexSize / 1.4142135623730950488016887242097f }, Enumerable.Empty<Edge<float>>(), Enumerable.Empty<Face<float>>()), Expand1, OrthoplexSize); //TODO
-        = MakeOrthoplex<float, Vector2>(Simplex1D.FMap(x => x / 1.4142135623730950488016887242097f), Expand1, OrthoplexSize); //TODO
+        = MakeOrthoplex<float, Vector2>(Orthoplex1D, Expand1, OrthoplexSize);
 
     public static readonly Polyhedron<Vector3> Orthoplex3D
         = MakeOrthoplex<Vector2, Vector3>(Orthoplex2D, Expand2, OrthoplexSize);
-        //= MakeOrthoplex<Vector2, Vector3>(Cube2D.FMap(x => x / 1.4142135623730950488016887242097f), Expand2, OrthoplexSize);
 
     public static readonly Polyhedron<Vector4> Orthoplex4D
         = MakeOrthoplex<Vector3, Vector4>(Orthoplex3D, Expand3, OrthoplexSize);
@@ -158,7 +155,7 @@ public static class Polyhedron {
 
     public static PolyInfo ToPolyInfo(this Polyhedron<Vector4> poly) {
         return new PolyInfo(
-            m => poly.FMap(x => m * x).Project(new Vector4(0, 0, 0, 3), new HyperPlane4(Vector4.zero, new Vector4(0, 0, 0, 1))),
+            m => poly.FMap(x => m * x).Project(new Vector4(0, 0, 0, 1.8f), new HyperPlane4(Vector4.zero, new Vector4(0, 0, 0, 1))),
             m => {
                 m[3, 0] = m[2, 0];
                 m[3, 1] = m[2, 1];
