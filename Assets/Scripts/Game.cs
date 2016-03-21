@@ -13,15 +13,20 @@ public class Game : MonoBehaviour {
     Matrix4x4 polyRotation = Matrix4x4.identity;
 
     PolyModel polyModel;
+    static float D4Zoom = 1.8f; //TODO not static
+
+    static float GetD4Zoom() {
+        return D4Zoom;
+    }
 
     static readonly PolyInfo[] Infos = new PolyInfo[] {
         Polyhedron.Orthoplex2D.FMap(x => x.Expand2()).ToPolyInfo(),
         Polyhedron.Orthoplex3D.ToPolyInfo(),
-        Polyhedron.Orthoplex4D.ToPolyInfo(),
+        Polyhedron.Orthoplex4D.ToPolyInfo(GetD4Zoom),
         Polyhedron.Simplex3D.ToPolyInfo(),
-        Polyhedron.Simplex4D.ToPolyInfo(),
+        Polyhedron.Simplex4D.ToPolyInfo(GetD4Zoom),
         Polyhedron.Cube3D.ToPolyInfo(),
-        Polyhedron.Cube4D.ToPolyInfo(),
+        Polyhedron.Cube4D.ToPolyInfo(GetD4Zoom),
     };
 
     int currentIndex = 0;
@@ -48,7 +53,7 @@ public class Game : MonoBehaviour {
 
         var zoom = zoomSpeed * Input.GetAxis("Mouse ScrollWheel");
         if(Input.GetButton("Fire1"))
-            Polyhedron.D4Zoom += zoom;
+            D4Zoom += zoom;
         else
             Camera.main.transform.Translate(0, 0, zoom);
 

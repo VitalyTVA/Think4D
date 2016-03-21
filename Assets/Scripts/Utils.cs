@@ -152,10 +152,9 @@ public static class Polyhedron {
     public static PolyInfo ToPolyInfo(this Polyhedron<Vector3> poly) {
         return new PolyInfo(m => poly.FMap(x => (m * x.Expand3()).Reduce4()), m => m);
     }
-    public static float D4Zoom = 1.8f; //TODO not static
-    public static PolyInfo ToPolyInfo(this Polyhedron<Vector4> poly) {
+    public static PolyInfo ToPolyInfo(this Polyhedron<Vector4> poly, Func<float> getD4Zoom) {
         return new PolyInfo(
-            m => poly.FMap(x => m * x).Project(new Vector4(0, 0, 0, D4Zoom), new HyperPlane4(Vector4.zero, new Vector4(0, 0, 0, 1))),
+            m => poly.FMap(x => m * x).Project(new Vector4(0, 0, 0, getD4Zoom()), new HyperPlane4(Vector4.zero, new Vector4(0, 0, 0, 1))),
             m => {
                 m[3, 0] = m[2, 0];
                 m[3, 1] = m[2, 1];
