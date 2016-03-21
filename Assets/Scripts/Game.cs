@@ -7,7 +7,7 @@ public class Game : MonoBehaviour {
     public GameObject vertex;
     public GameObject edge;
     public Material faceMaterial;
-    public float rotationSpeed = 1;
+    public float zoomSpeed = 1;
     RotationHelper rotationHelper;
     RotationHelper rotationHelper2;
     Matrix4x4 polyRotation = Matrix4x4.identity;
@@ -29,7 +29,6 @@ public class Game : MonoBehaviour {
     void Start() {
         polyModel = CreateNextModel();
 
-
         rotationHelper = new RotationHelper(x => {
             polyRotation = x;
         }, () => polyRotation, x => x, 0);
@@ -46,6 +45,13 @@ public class Game : MonoBehaviour {
             polyModel = CreateNextModel();
             polyRotation = Matrix4x4.identity;
         }
+
+        var zoom = zoomSpeed * Input.GetAxis("Mouse ScrollWheel");
+        if(Input.GetButton("Fire1"))
+            Polyhedron.D4Zoom += zoom;
+        else
+            Camera.main.transform.Translate(0, 0, zoom);
+
         rotationHelper.Update();
         rotationHelper2.Update();
 
