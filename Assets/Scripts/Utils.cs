@@ -5,13 +5,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-public static class Polyhedron {
-    public static Polyhedron<T> CreatePolyhedron<T>(IEnumerable<T> vertexes, IEnumerable<Edge<T>> edges, IEnumerable<Face<T>> faces) {
-        return new Polyhedron<T>(vertexes.ToReadOnly(), edges.ToReadOnly(), faces.ToReadOnly());
+public static class Polytope {
+    public static Polytope<T> Create<T>(IEnumerable<T> vertexes, IEnumerable<Edge<T>> edges, IEnumerable<Face<T>> faces) {
+        return new Polytope<T>(vertexes.ToReadOnly(), edges.ToReadOnly(), faces.ToReadOnly());
     }
 
-    public static Polyhedron<Vector3> Project(this Polyhedron<Vector4> polyhedron, Vector4 projectionPoint, HyperPlane4 plane) {
-        return polyhedron.FMap(x => x.Project(projectionPoint, plane));
+    public static Polytope<Vector3> Project(this Polytope<Vector4> polychoron, Vector4 projectionPoint, HyperPlane4 plane) {
+        return polychoron.FMap(x => x.Project(projectionPoint, plane));
     }
     public static Vector3 Project(this Vector4 point, Vector4 projectionPoint, HyperPlane4 plane) {
         var line = Line4.LineFromTo(point, projectionPoint);
@@ -98,10 +98,10 @@ public struct HyperPlane4 {
     }
 }
 public class PolyInfo {
-    public readonly Func<Polyhedron<Vector3>> GetPoly;
+    public readonly Func<Polytope<Vector3>> GetPoly;
     public readonly Func<Matrix4x4, Matrix4x4> AlternateRotationMatrix;
 
-    public PolyInfo(Func<Polyhedron<Vector3>> getPoly, Func<Matrix4x4, Matrix4x4> alternateRotationMatrix) {
+    public PolyInfo(Func<Polytope<Vector3>> getPoly, Func<Matrix4x4, Matrix4x4> alternateRotationMatrix) {
         GetPoly = getPoly;
         AlternateRotationMatrix = alternateRotationMatrix;
     }

@@ -41,7 +41,7 @@ public class PolyModel {
         UpdateFaces(faces.GetComponent<MeshFilter>(), rotatedPolyhendron);
     }
 
-    Polyhedron<Vector3> GetPoly() {
+    Polytope<Vector3> GetPoly() {
         return PolyInfo.GetPoly();
     }
 
@@ -53,7 +53,7 @@ public class PolyModel {
         mf.mesh = mesh;
         return faces;
     }
-    static void UpdateFaces(MeshFilter mf, Polyhedron<Vector3> polyhedron) {
+    static void UpdateFaces(MeshFilter mf, Polytope<Vector3> polyhedron) {
         var mesh = new Mesh();
         mf.mesh = mesh;
 

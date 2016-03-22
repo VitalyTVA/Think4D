@@ -23,13 +23,12 @@ public class Game : MonoBehaviour {
 
     void Start() {
         Infos = new PolyInfo[] {
-            ToPolyInfo(Polyhedrons.Orthoplex2D.FMap(x => x.Expand2())),
-            ToPolyInfo(Polyhedrons.Orthoplex3D),
-            ToPolyInfo(Polyhedrons.Orthoplex4D),
-            ToPolyInfo(Polyhedrons.Simplex3D),
-            ToPolyInfo(Polyhedrons.Simplex4D),
-            ToPolyInfo(Polyhedrons.Cube3D),
-            ToPolyInfo(Polyhedrons.Cube4D),
+            ToPolyInfo(Polytopes.Orthoplex3D),
+            ToPolyInfo(Polytopes.Orthoplex4D),
+            ToPolyInfo(Polytopes.Simplex3D),
+            ToPolyInfo(Polytopes.Simplex4D),
+            ToPolyInfo(Polytopes.Cube3D),
+            ToPolyInfo(Polytopes.Cube4D),
         };
 
 
@@ -75,10 +74,10 @@ public class Game : MonoBehaviour {
         return new PolyModel(this, Infos[index]);
     }
 
-    PolyInfo ToPolyInfo(Polyhedron<Vector3> poly) {
+    PolyInfo ToPolyInfo(Polytope<Vector3> poly) {
         return new PolyInfo(() => poly.FMap(x => (rotation3D * x.Expand3()).Reduce4()), m => m);
     }
-    PolyInfo ToPolyInfo(Polyhedron<Vector4> poly) {
+    PolyInfo ToPolyInfo(Polytope<Vector4> poly) {
         return new PolyInfo(
             () => poly.FMap(x => rotation4D * x).Project(new Vector4(0, 0, 0, d4Zoom), new HyperPlane4(Vector4.zero, new Vector4(0, 0, 0, 1))),
             m => {

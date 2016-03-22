@@ -31,16 +31,16 @@ public static class Face {
         return new Face<T>(vertexes.ToReadOnly());
     }
 }
-public class Polyhedron<T> {
+public class Polytope<T> {
     public readonly ReadOnlyCollection<T> Vertexes;
     public readonly ReadOnlyCollection<Edge<T>> Edges;
     public readonly ReadOnlyCollection<Face<T>> Faces;
-    public Polyhedron(ReadOnlyCollection<T> vertexes, ReadOnlyCollection<Edge<T>> edges, ReadOnlyCollection<Face<T>> faces) {
+    public Polytope(ReadOnlyCollection<T> vertexes, ReadOnlyCollection<Edge<T>> edges, ReadOnlyCollection<Face<T>> faces) {
         Vertexes = vertexes;
         Edges = edges;
         Faces = faces;
     }
-    public Polyhedron<TNew> FMap<TNew>(Func<T, TNew> map) {
-        return Polyhedron.CreatePolyhedron(Vertexes.Select(map), Edges.Select(x => x.FMap(map)), Faces.Select(x => x.FMap(map)));
+    public Polytope<TNew> FMap<TNew>(Func<T, TNew> map) {
+        return Polytope.Create(Vertexes.Select(map), Edges.Select(x => x.FMap(map)), Faces.Select(x => x.FMap(map)));
     }
 }
