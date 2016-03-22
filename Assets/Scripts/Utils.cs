@@ -34,21 +34,6 @@ public static class Polyhedron {
             return null;
         return new Vector2((-b - Mathf.Sqrt(d)) / (2 * a), (-b + Mathf.Sqrt(d)) / (2 * a));
     }
-    public static Quaternion Normalize(this Quaternion q) {
-        Quaternion result;
-        float sq = q.x * q.x;
-        sq += q.y * q.y;
-        sq += q.z * q.z;
-        sq += q.w * q.w;
-        //detect badness
-        //assert(sq > 0.1f);
-        float inv = 1.0f / Mathf.Sqrt(sq);
-        result.x = q.x * inv;
-        result.y = q.y * inv;
-        result.z = q.z * inv;
-        result.w = q.w * inv;
-        return result;
-    }
     public static Matrix4x4 Normalize(this Matrix4x4 m) {
         //var det = m.determinant;
         //for(int i = 0; i < 16; i++) {
