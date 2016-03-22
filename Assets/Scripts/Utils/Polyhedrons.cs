@@ -15,16 +15,16 @@ public static class Polyhedrons {
 
     #region cube
     public static readonly Polyhedron<float> Cube1D
-        = MakePrism<Void, float>(Point, Metrics.Expand0, CubeSize);
+        = MakePrism<Void, float>(Point, Metric.Expand0, CubeSize);
 
     public static readonly Polyhedron<Vector2> Cube2D
-        = MakePrism<float, Vector2>(Cube1D, Metrics.Expand1, CubeSize);
+        = MakePrism<float, Vector2>(Cube1D, Metric.Expand1, CubeSize);
 
     public static readonly Polyhedron<Vector3> Cube3D
-        = MakePrism<Vector2, Vector3>(Cube2D, Metrics.Expand2, CubeSize);
+        = MakePrism<Vector2, Vector3>(Cube2D, Metric.Expand2, CubeSize);
 
     public static readonly Polyhedron<Vector4> Cube4D
-        = MakePrism<Vector3, Vector4>(Cube3D, Metrics.Expand3, CubeSize);
+        = MakePrism<Vector3, Vector4>(Cube3D, Metric.Expand3, CubeSize);
 
     static Polyhedron<TNPlus1> MakePrism<TN, TNPlus1>(this Polyhedron<TN> polyhedron, Func<TN, float, TNPlus1> addDimension, float newDimensionSize) {
         var bottom = polyhedron.FMap((TN x) => addDimension(x, -newDimensionSize / 2));
@@ -46,16 +46,16 @@ public static class Polyhedrons {
 
     #region simplex
     public static readonly Polyhedron<float> Simplex1D
-        = MakeSimplex<Void, float>(Point, Metrics.Expand0, SimplexSize);
+        = MakeSimplex<Void, float>(Point, Metric.Expand0, SimplexSize);
 
     public static readonly Polyhedron<Vector2> Simplex2D
-        = MakeSimplex<float, Vector2>(Simplex1D, Metrics.Expand1, SimplexSize);
+        = MakeSimplex<float, Vector2>(Simplex1D, Metric.Expand1, SimplexSize);
 
     public static readonly Polyhedron<Vector3> Simplex3D
-        = MakeSimplex<Vector2, Vector3>(Simplex2D, Metrics.Expand2, SimplexSize);
+        = MakeSimplex<Vector2, Vector3>(Simplex2D, Metric.Expand2, SimplexSize);
 
     public static readonly Polyhedron<Vector4> Simplex4D
-        = MakeSimplex<Vector3, Vector4>(Simplex3D, Metrics.Expand3, SimplexSize);
+        = MakeSimplex<Vector3, Vector4>(Simplex3D, Metric.Expand3, SimplexSize);
 
     static Polyhedron<TNPlus1> MakeSimplex<TN, TNPlus1>(this Polyhedron<TN> simplex, Func<TN, float, TNPlus1> addDimension, float edgeSize) {
         var n = (float)simplex.Vertexes.Count;
@@ -75,16 +75,16 @@ public static class Polyhedrons {
 
     #region orthoplex
     public static readonly Polyhedron<float> Orthoplex1D
-        = MakeSimplex<Void, float>(Point, Metrics.Expand0, OrthoplexSize * Mathf.Sqrt(2));
+        = MakeSimplex<Void, float>(Point, Metric.Expand0, OrthoplexSize * Mathf.Sqrt(2));
 
     public static readonly Polyhedron<Vector2> Orthoplex2D
-        = MakeOrthoplex<float, Vector2>(Orthoplex1D, Metrics.Expand1, OrthoplexSize);
+        = MakeOrthoplex<float, Vector2>(Orthoplex1D, Metric.Expand1, OrthoplexSize);
 
     public static readonly Polyhedron<Vector3> Orthoplex3D
-        = MakeOrthoplex<Vector2, Vector3>(Orthoplex2D, Metrics.Expand2, OrthoplexSize);
+        = MakeOrthoplex<Vector2, Vector3>(Orthoplex2D, Metric.Expand2, OrthoplexSize);
 
     public static readonly Polyhedron<Vector4> Orthoplex4D
-        = MakeOrthoplex<Vector3, Vector4>(Orthoplex3D, Metrics.Expand3, OrthoplexSize);
+        = MakeOrthoplex<Vector3, Vector4>(Orthoplex3D, Metric.Expand3, OrthoplexSize);
 
     static Polyhedron<TNPlus1> MakeOrthoplex<TN, TNPlus1>(this Polyhedron<TN> orthoplex, Func<TN, float, TNPlus1> addDimension, float edgeSize) {
         var r = edgeSize / Mathf.Sqrt(2);
