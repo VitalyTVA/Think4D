@@ -5,27 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-public static class Metrics {
-    public static float Expand0(Void @void, float nextCoord) {
-        return nextCoord;
-    }
-    public static Vector2 Expand1(float x, float nextCoord = 0) {
-        return new Vector2(x, nextCoord);
-    }
-    public static Vector3 Expand2(this Vector2 x, float nextCoord = 0) {
-        return new Vector3(x.x, x.y, nextCoord);
-    }
-    public static Vector3 Reduce4(this Vector4 p) {
-        return new Vector3(p.x, p.y, p.z);
-    }
-    public static Vector4 Expand3(this Vector3 p, float next = 0) {
-        return new Vector4(p.x, p.y, p.z, next);
-    }
-}
-
 public static class Polyhedron {
     public static PolyInfo ToPolyInfo(this Polyhedron<Vector3> poly) {
-        return new PolyInfo(m => poly.FMap(x => (m * x.Expand3()).Reduce4()), m => m);
+        return new PolyInfo(m => poly.FMap(x => (m * x.Expand3()).Reduce4()), m => m, false);
     }
     public static PolyInfo ToPolyInfo(this Polyhedron<Vector4> poly, Func<float> getD4Zoom) {
         return new PolyInfo(
@@ -43,7 +25,7 @@ public static class Polyhedron {
                 m[1, 2] = 0;
                 m[2, 2] = 1;
                 return m;
-            });
+            }, true);
     }
 
     public static Polyhedron<T> CreatePolyhedron<T>(IEnumerable<T> vertexes, IEnumerable<Edge<T>> edges, IEnumerable<Face<T>> faces) {
@@ -155,8 +137,11 @@ public struct HyperPlane4 {
 public class PolyInfo {
     public readonly Func<Matrix4x4, Polyhedron<Vector3>> GetPoly;
     public readonly Func<Matrix4x4, Matrix4x4> AlternateRotationMatrix;
-    public PolyInfo(Func<Matrix4x4, Polyhedron<Vector3>> getPoly, Func<Matrix4x4, Matrix4x4> alternateRortationMatrix) {
+    public readonly bool Id4D;
+
+    public PolyInfo(Func<Matrix4x4, Polyhedron<Vector3>> getPoly, Func<Matrix4x4, Matrix4x4> alternateRotationMatrix, bool id4D) {
         GetPoly = getPoly;
-        AlternateRotationMatrix = alternateRortationMatrix;
+        AlternateRotationMatrix = alternateRotationMatrix;
+        Id4D = id4D;
     }
 }

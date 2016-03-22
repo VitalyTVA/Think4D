@@ -8,9 +8,11 @@ public class Game : MonoBehaviour {
     public GameObject edge;
     public Material faceMaterial;
     public float zoomSpeed = 1;
+    RotationHelper rotationHelper3D;
     RotationHelper rotationHelper;
     RotationHelper rotationHelper2;
-    Matrix4x4 polyRotation = Matrix4x4.identity;
+    Matrix4x4 rotation4D = Matrix4x4.identity;
+    Matrix4x4 rotation3D = Matrix4x4.identity;
 
     PolyModel polyModel;
     float D4Zoom = 1.8f; //TODO not static
@@ -37,12 +39,15 @@ public class Game : MonoBehaviour {
 
         polyModel = CreateNextModel();
 
+        rotationHelper3D = new RotationHelper(x => {
+            rotation3D = x;
+        }, () => rotation3D, x => x, 0);
         rotationHelper = new RotationHelper(x => {
-            polyRotation = x;
-        }, () => polyRotation, x => x, 0);
+            rotation4D = x;
+        }, () => rotation4D, x => x, 0);
         rotationHelper2 = new RotationHelper(x => {
-            polyRotation = x;
-        }, () => polyRotation, m => polyModel.polyInfo.AlternateRotationMatrix(m), 1);
+            rotation4D = x;
+        }, () => rotation4D, m => polyModel.PolyInfo.AlternateRotationMatrix(m), 1);
 
     }
 
@@ -51,7 +56,7 @@ public class Game : MonoBehaviour {
         if(Input.GetMouseButtonDown(2)) {
             polyModel.Destroy();
             polyModel = CreateNextModel();
-            polyRotation = Matrix4x4.identity;
+            //rotation4D = Matrix4x4.identity;
         }
 
         var zoom = zoomSpeed * Input.GetAxis("Mouse ScrollWheel");
@@ -60,10 +65,11 @@ public class Game : MonoBehaviour {
         else
             Camera.main.transform.Translate(0, 0, zoom);
 
+        rotationHelper3D.Update();
         rotationHelper.Update();
         rotationHelper2.Update();
 
-        polyModel.Update(polyRotation);
+        polyModel.Update(polyModel.PolyInfo.Id4D ? rotation4D : rotation3D);
 
     }
 

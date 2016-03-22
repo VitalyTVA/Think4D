@@ -8,11 +8,11 @@ public class PolyModel {
     readonly GameObject faces;
 
     readonly Game owner;
-    public readonly PolyInfo polyInfo;
+    public readonly PolyInfo PolyInfo;
 
     public PolyModel(Game owner, PolyInfo polyInfo) {
         this.owner = owner;
-        this.polyInfo = polyInfo;
+        this.PolyInfo = polyInfo;
 
         var polyhedron = GetPoly(Matrix4x4.identity);
         faces = CreateFaces(owner.faceMaterial);
@@ -42,7 +42,7 @@ public class PolyModel {
     }
 
     Polyhedron<Vector3> GetPoly(Matrix4x4 m) {
-        return polyInfo.GetPoly(m);
+        return PolyInfo.GetPoly(m);
     }
 
     static GameObject CreateFaces(Material material) {
