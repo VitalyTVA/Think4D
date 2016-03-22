@@ -14,7 +14,7 @@ public class PolyModel {
         this.owner = owner;
         this.PolyInfo = polyInfo;
 
-        var polyhedron = GetPoly(Matrix4x4.identity);
+        var polyhedron = GetPoly();
         faces = CreateFaces(owner.faceMaterial);
 
         root = new GameObject("Cube");
@@ -29,8 +29,8 @@ public class PolyModel {
         Object.Destroy(faces);
     }
 
-    public void Update(Matrix4x4 polyRotation) {
-        var rotatedPolyhendron = GetPoly(polyRotation);
+    public void Update() {
+        var rotatedPolyhendron = GetPoly();
         for(int i = 0; i < vertexes.Length; i++) {
             vertexes[i].transform.localPosition = rotatedPolyhendron.Vertexes[i];
         }
@@ -41,8 +41,8 @@ public class PolyModel {
         UpdateFaces(faces.GetComponent<MeshFilter>(), rotatedPolyhendron);
     }
 
-    Polyhedron<Vector3> GetPoly(Matrix4x4 m) {
-        return PolyInfo.GetPoly(m);
+    Polyhedron<Vector3> GetPoly() {
+        return PolyInfo.GetPoly();
     }
 
     static GameObject CreateFaces(Material material) {

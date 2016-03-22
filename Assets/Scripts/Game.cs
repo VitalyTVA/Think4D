@@ -15,11 +15,7 @@ public class Game : MonoBehaviour {
     Matrix4x4 rotation3D = Matrix4x4.identity;
 
     PolyModel polyModel;
-    float D4Zoom = 1.8f; //TODO not static
-
-    float GetD4Zoom() {
-        return D4Zoom;
-    }
+    float d4Zoom = 1.8f;
 
     PolyInfo[] Infos;
 
@@ -27,13 +23,13 @@ public class Game : MonoBehaviour {
 
     void Start() {
         Infos = new PolyInfo[] {
-            Polyhedrons.Orthoplex2D.FMap(x => x.Expand2()).ToPolyInfo(),
-            Polyhedrons.Orthoplex3D.ToPolyInfo(),
-            Polyhedrons.Orthoplex4D.ToPolyInfo(GetD4Zoom),
-            Polyhedrons.Simplex3D.ToPolyInfo(),
-            Polyhedrons.Simplex4D.ToPolyInfo(GetD4Zoom),
-            Polyhedrons.Cube3D.ToPolyInfo(),
-            Polyhedrons.Cube4D.ToPolyInfo(GetD4Zoom),
+            ToPolyInfo(Polyhedrons.Orthoplex2D.FMap(x => x.Expand2())),
+            ToPolyInfo(Polyhedrons.Orthoplex3D),
+            ToPolyInfo(Polyhedrons.Orthoplex4D),
+            ToPolyInfo(Polyhedrons.Simplex3D),
+            ToPolyInfo(Polyhedrons.Simplex4D),
+            ToPolyInfo(Polyhedrons.Cube3D),
+            ToPolyInfo(Polyhedrons.Cube4D),
         };
 
 
@@ -61,7 +57,7 @@ public class Game : MonoBehaviour {
 
         var zoom = zoomSpeed * Input.GetAxis("Mouse ScrollWheel");
         if(Input.GetButton("Fire1"))
-            D4Zoom += zoom;
+            d4Zoom += zoom;
         else
             Camera.main.transform.Translate(0, 0, zoom);
 
@@ -69,7 +65,7 @@ public class Game : MonoBehaviour {
         rotationHelper.Update();
         rotationHelper2.Update();
 
-        polyModel.Update(polyModel.PolyInfo.Id4D ? rotation4D : rotation3D);
+        polyModel.Update();
 
     }
 
@@ -77,5 +73,27 @@ public class Game : MonoBehaviour {
         var index = currentIndex % Infos.Length;
         currentIndex++;
         return new PolyModel(this, Infos[index]);
+    }
+
+    PolyInfo ToPolyInfo(Polyhedron<Vector3> poly) {
+        return new PolyInfo(() => poly.FMap(x => (rotation3D * x.Expand3()).Reduce4()), m => m);
+    }
+    PolyInfo ToPolyInfo(Polyhedron<Vector4> poly) {
+        return new PolyInfo(
+            () => poly.FMap(x => rotation4D * x).Project(new Vector4(0, 0, 0, d4Zoom), new HyperPlane4(Vector4.zero, new Vector4(0, 0, 0, 1))),
+            m => {
+                m[3, 0] = m[2, 0];
+                m[3, 1] = m[2, 1];
+                m[0, 3] = m[0, 2];
+                m[1, 3] = m[1, 2];
+                m[3, 3] = m[2, 2];
+
+                m[2, 0] = 0;
+                m[2, 1] = 0;
+                m[0, 2] = 0;
+                m[1, 2] = 0;
+                m[2, 2] = 1;
+                return m;
+            });
     }
 }

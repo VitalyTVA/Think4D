@@ -6,28 +6,6 @@ using System.Collections.Generic;
 using System.Linq;
 
 public static class Polyhedron {
-    public static PolyInfo ToPolyInfo(this Polyhedron<Vector3> poly) {
-        return new PolyInfo(m => poly.FMap(x => (m * x.Expand3()).Reduce4()), m => m, false);
-    }
-    public static PolyInfo ToPolyInfo(this Polyhedron<Vector4> poly, Func<float> getD4Zoom) {
-        return new PolyInfo(
-            m => poly.FMap(x => m * x).Project(new Vector4(0, 0, 0, getD4Zoom()), new HyperPlane4(Vector4.zero, new Vector4(0, 0, 0, 1))),
-            m => {
-                m[3, 0] = m[2, 0];
-                m[3, 1] = m[2, 1];
-                m[0, 3] = m[0, 2];
-                m[1, 3] = m[1, 2];
-                m[3, 3] = m[2, 2];
-
-                m[2, 0] = 0;
-                m[2, 1] = 0;
-                m[0, 2] = 0;
-                m[1, 2] = 0;
-                m[2, 2] = 1;
-                return m;
-            }, true);
-    }
-
     public static Polyhedron<T> CreatePolyhedron<T>(IEnumerable<T> vertexes, IEnumerable<Edge<T>> edges, IEnumerable<Face<T>> faces) {
         return new Polyhedron<T>(vertexes.ToReadOnly(), edges.ToReadOnly(), faces.ToReadOnly());
     }
@@ -135,13 +113,11 @@ public struct HyperPlane4 {
     }
 }
 public class PolyInfo {
-    public readonly Func<Matrix4x4, Polyhedron<Vector3>> GetPoly;
+    public readonly Func<Polyhedron<Vector3>> GetPoly;
     public readonly Func<Matrix4x4, Matrix4x4> AlternateRotationMatrix;
-    public readonly bool Id4D;
 
-    public PolyInfo(Func<Matrix4x4, Polyhedron<Vector3>> getPoly, Func<Matrix4x4, Matrix4x4> alternateRotationMatrix, bool id4D) {
+    public PolyInfo(Func<Polyhedron<Vector3>> getPoly, Func<Matrix4x4, Matrix4x4> alternateRotationMatrix) {
         GetPoly = getPoly;
         AlternateRotationMatrix = alternateRotationMatrix;
-        Id4D = id4D;
     }
 }
