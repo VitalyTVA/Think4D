@@ -41,6 +41,6 @@ public class Polyhedron<T> {
         Faces = faces;
     }
     public Polyhedron<TNew> FMap<TNew>(Func<T, TNew> map) {
-        return Polyhedron.Create(Vertexes.Select(map), Edges.Select(x => x.FMap(map)), Faces.Select(x => x.FMap(map)));
+        return Polyhedron.CreatePolyhedron(Vertexes.Select(map), Edges.Select(x => x.FMap(map)), Faces.Select(x => x.FMap(map)));
     }
 }

@@ -11,7 +11,7 @@ public static class Polyhedron {
     public const float OrthoplexSize = 2;
 
     public static readonly Polyhedron<Void> Point
-        = Create(Void.Instance.Yield(), Enumerable.Empty<Edge<Void>>(), Enumerable.Empty<Face<Void>>());
+        = CreatePolyhedron(Void.Instance.Yield(), Enumerable.Empty<Edge<Void>>(), Enumerable.Empty<Face<Void>>());
 
     #region cube
     public static readonly Polyhedron<float> Cube1D
@@ -31,7 +31,7 @@ public static class Polyhedron {
         var top = polyhedron.FMap((TN x) => addDimension(x, newDimensionSize / 2));
         var newEdges = bottom.Vertexes.Zip(top.Vertexes, (v1, v2) => new Edge<TNPlus1>(v1, v2));
         var faces = CombinePrismFaces(bottom, top);
-        return Create(
+        return CreatePolyhedron(
             bottom.Vertexes.Concat(top.Vertexes),
             bottom.Edges.Concat(top.Edges).Concat(newEdges),
             faces
@@ -65,7 +65,7 @@ public static class Polyhedron {
         var bottom = simplex.FMap((TN x) => addDimension(x, -d));
         var top = addDimension(default(TN), r);
         var newFaces = bottom.Vertexes.Zip(bottom.Vertexes.HeadToTail(), (x, y) => Face.Create(new[] { top, x, y }));
-        return Create(
+        return CreatePolyhedron(
             bottom.Vertexes.Concat(top.Yield()),
             bottom.Edges.Concat(bottom.Vertexes.Select(x => new Edge<TNPlus1>(x, top))),
             bottom.Faces.Concat(newFaces)
@@ -99,7 +99,7 @@ public static class Polyhedron {
         var newTopEdges = baseOrthoplex.Vertexes.Select(x => new Edge<TNPlus1>(x, top));
         var newBottomEdges = baseOrthoplex.Vertexes.Select(x => new Edge<TNPlus1>(x, bottom));
         var newFaces = Enumerable.Empty<Face<TNPlus1>>();
-        return Create(
+        return CreatePolyhedron(
             baseOrthoplex.Vertexes.Concat(new[] { top, bottom }),
             oldEdges.Concat(newTopEdges).Concat(newBottomEdges),
             newFaces
@@ -130,7 +130,7 @@ public static class Polyhedron {
             });
     }
 
-    public static Polyhedron<T> Create<T>(IEnumerable<T> vertexes, IEnumerable<Edge<T>> edges, IEnumerable<Face<T>> faces) {
+    public static Polyhedron<T> CreatePolyhedron<T>(IEnumerable<T> vertexes, IEnumerable<Edge<T>> edges, IEnumerable<Face<T>> faces) {
         return new Polyhedron<T>(vertexes.ToReadOnly(), edges.ToReadOnly(), faces.ToReadOnly());
     }
 
