@@ -20,13 +20,13 @@ public class Game : MonoBehaviour {
     }
 
     static readonly PolyInfo[] Infos = new PolyInfo[] {
-        Polyhedron.Orthoplex2D.FMap(x => x.Expand2()).ToPolyInfo(),
-        Polyhedron.Orthoplex3D.ToPolyInfo(),
-        Polyhedron.Orthoplex4D.ToPolyInfo(GetD4Zoom),
-        Polyhedron.Simplex3D.ToPolyInfo(),
-        Polyhedron.Simplex4D.ToPolyInfo(GetD4Zoom),
-        Polyhedron.Cube3D.ToPolyInfo(),
-        Polyhedron.Cube4D.ToPolyInfo(GetD4Zoom),
+        Polyhedrons.Orthoplex2D.FMap(x => x.Expand2()).ToPolyInfo(),
+        Polyhedrons.Orthoplex3D.ToPolyInfo(),
+        Polyhedrons.Orthoplex4D.ToPolyInfo(GetD4Zoom),
+        Polyhedrons.Simplex3D.ToPolyInfo(),
+        Polyhedrons.Simplex4D.ToPolyInfo(GetD4Zoom),
+        Polyhedrons.Cube3D.ToPolyInfo(),
+        Polyhedrons.Cube4D.ToPolyInfo(GetD4Zoom),
     };
 
     int currentIndex = 0;
