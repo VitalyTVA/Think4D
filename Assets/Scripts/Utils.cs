@@ -5,6 +5,24 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+public static class Metrics {
+    public static float Expand0(Void @void, float nextCoord) {
+        return nextCoord;
+    }
+    public static Vector2 Expand1(float x, float nextCoord = 0) {
+        return new Vector2(x, nextCoord);
+    }
+    public static Vector3 Expand2(this Vector2 x, float nextCoord = 0) {
+        return new Vector3(x.x, x.y, nextCoord);
+    }
+    public static Vector3 Reduce4(this Vector4 p) {
+        return new Vector3(p.x, p.y, p.z);
+    }
+    public static Vector4 Expand3(this Vector3 p, float next = 0) {
+        return new Vector4(p.x, p.y, p.z, next);
+    }
+}
+
 public static class Polyhedron {
     public static PolyInfo ToPolyInfo(this Polyhedron<Vector3> poly) {
         return new PolyInfo(m => poly.FMap(x => (m * x.Expand3()).Reduce4()), m => m);
@@ -30,23 +48,6 @@ public static class Polyhedron {
 
     public static Polyhedron<T> CreatePolyhedron<T>(IEnumerable<T> vertexes, IEnumerable<Edge<T>> edges, IEnumerable<Face<T>> faces) {
         return new Polyhedron<T>(vertexes.ToReadOnly(), edges.ToReadOnly(), faces.ToReadOnly());
-    }
-
-
-    public static float Expand0(Void @void, float nextCoord) {
-        return nextCoord;
-    }
-    public static Vector2 Expand1(float x, float nextCoord = 0) {
-        return new Vector2(x, nextCoord);
-    }
-    public static Vector3 Expand2(this Vector2 x, float nextCoord = 0) {
-        return new Vector3(x.x, x.y, nextCoord);
-    }
-    public static Vector3 Reduce4(this Vector4 p) {
-        return new Vector3(p.x, p.y, p.z);
-    }
-    public static Vector4 Expand3(this Vector3 p, float next = 0) {
-        return new Vector4(p.x, p.y, p.z, next);
     }
 
     public static Polyhedron<Vector3> Project(this Polyhedron<Vector4> polyhedron, Vector4 projectionPoint, HyperPlane4 plane) {

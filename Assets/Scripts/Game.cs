@@ -13,25 +13,28 @@ public class Game : MonoBehaviour {
     Matrix4x4 polyRotation = Matrix4x4.identity;
 
     PolyModel polyModel;
-    static float D4Zoom = 1.8f; //TODO not static
+    float D4Zoom = 1.8f; //TODO not static
 
-    static float GetD4Zoom() {
+    float GetD4Zoom() {
         return D4Zoom;
     }
 
-    static readonly PolyInfo[] Infos = new PolyInfo[] {
-        Polyhedrons.Orthoplex2D.FMap(x => x.Expand2()).ToPolyInfo(),
-        Polyhedrons.Orthoplex3D.ToPolyInfo(),
-        Polyhedrons.Orthoplex4D.ToPolyInfo(GetD4Zoom),
-        Polyhedrons.Simplex3D.ToPolyInfo(),
-        Polyhedrons.Simplex4D.ToPolyInfo(GetD4Zoom),
-        Polyhedrons.Cube3D.ToPolyInfo(),
-        Polyhedrons.Cube4D.ToPolyInfo(GetD4Zoom),
-    };
+    PolyInfo[] Infos;
 
     int currentIndex = 0;
 
     void Start() {
+        Infos = new PolyInfo[] {
+            Polyhedrons.Orthoplex2D.FMap(x => x.Expand2()).ToPolyInfo(),
+            Polyhedrons.Orthoplex3D.ToPolyInfo(),
+            Polyhedrons.Orthoplex4D.ToPolyInfo(GetD4Zoom),
+            Polyhedrons.Simplex3D.ToPolyInfo(),
+            Polyhedrons.Simplex4D.ToPolyInfo(GetD4Zoom),
+            Polyhedrons.Cube3D.ToPolyInfo(),
+            Polyhedrons.Cube4D.ToPolyInfo(GetD4Zoom),
+        };
+
+
         polyModel = CreateNextModel();
 
         rotationHelper = new RotationHelper(x => {
